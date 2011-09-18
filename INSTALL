@@ -1,0 +1,9 @@
+Linux:
+$ qmake
+$ make
+$ ./font
+
+Windows:
+- Download QT Creator SDK for windows
+- Open font.pro in QT Creator
+- Build project
