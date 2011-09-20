@@ -23,8 +23,8 @@ Yoffset - distance on the y-axis, on which glyph must be shifted
 Orig W - original width of glyph
 Orig H - original height of glyph
 
-(https://github.com/scriptum/UBFG/raw/master/readme.png)
+!(https://github.com/scriptum/UBFG/raw/master/readme.png)
 
 Screenshot:
 
-(http://ompldr.org/vYWVtZA.png)
+!(http://ompldr.org/vYWVtZA.png)
