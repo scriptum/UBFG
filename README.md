@@ -14,6 +14,7 @@ UBFG generates two files: font.png and font.fnt.
 	97    90      36      5       7        1        4        7        14
 	98    0       41      5       9        1        2        7        14
 
+
 Here:
 
 * Char - ASCII number of your char (CP 1251 codepage). For example, 32 is a 'space'
