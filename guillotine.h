@@ -2,6 +2,7 @@
 #define GUILLOTINE_H
 
 #include <QImage>
+#include "imagepacker.h"
 class Guillotine
 {
 public:
@@ -17,6 +18,7 @@ public:
     bool leaf;
     int heuristicMethod;
     QImage * image;
+    ImagePacker* packer;
 private:
     int heurMin, heurMax;
     Guillotine* heurBestFit;

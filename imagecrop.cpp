@@ -3,11 +3,11 @@
 //auto-cropping algorithm
 void ImagePacker::crop(QList<packedImage*> *images)
 {
-    int i, j, w, h, x, y, br;
+    int i, j, w, h, x, y;
     QRgb pix;
     //QImage im;
     bool t;
-    for(i = 0; i < images->size(); i++)
+    if(trim) for(i = 0; i < images->size(); i++)
     {
         //im = &images->operator [](i)->img;
         pix = images->at(i)->img.pixel(0,0);
@@ -51,9 +51,8 @@ void ImagePacker::crop(QList<packedImage*> *images)
         QImage newImg;
         //newImg = QImage(w+1, h+1, QImage::Format_ARGB32_Premultiplied);
         QRect pos(0, 0, images->at(i)->img.width(), images->at(i)->img.height());
-        br = (int)border;
-        if(w == 0) br = 0;
-        if(w>0) newImg = images->at(i)->img.copy(QRect(x, y, w+br, h+br));
+        
+        if(w > 0) newImg = images->at(i)->img.copy(QRect(x-borderLeft, y-borderTop, w+borderLeft+borderRight, h+borderTop+borderBottom));
         //images->at(i)->img.~QImage();
         images->operator [](i)->img = newImg;
         images->operator [](i)->crop = QRect(x, y, w, h);

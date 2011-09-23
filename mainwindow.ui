@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>843</width>
-    <height>675</height>
+    <height>673</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,43 +44,57 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Font family:</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_11">
+          <property name="rightMargin">
+           <number>0</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFontComboBox" name="fontComboBox">
-          <property name="currentIndex">
-           <number>3</number>
+          <property name="bottomMargin">
+           <number>0</number>
           </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::AdjustToContents</enum>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-          <property name="currentFont">
-           <font>
-            <family>Arial</family>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Font size:</string>
-          </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Font family:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFontComboBox" name="fontComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToContents</enum>
+            </property>
+            <property name="frame">
+             <bool>true</bool>
+            </property>
+            <property name="currentFont">
+             <font/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Font size:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QSpinBox" name="spinFontSize">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -117,24 +131,13 @@
           <item>
            <widget class="QCheckBox" name="checkFontSmoothing">
             <property name="text">
-             <string>Smoothing</string>
+             <string>Smooth</string>
             </property>
             <property name="checked">
              <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QCheckBox" name="checkFontPadding">
-            <property name="text">
-             <string>Border 1 px</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
            <widget class="QCheckBox" name="checkFontBold">
             <property name="text">
@@ -152,9 +155,39 @@
          </layout>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Add</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_3">
+            <property name="text">
+             <string>Remove</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QListWidget" name="listOfFonts">
+          <item>
+           <property name="text">
+            <string notr="true">Arial, 36 pt smooth</string>
+           </property>
+           <property name="flags">
+            <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Char list:</string>
+           <string>Char list (don't forget space):</string>
           </property>
          </widget>
         </item>
@@ -169,7 +202,7 @@
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>30</height>
+            <height>50</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -190,39 +223,101 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QPushButton" name="pushButton">
+         <widget class="QCheckBox" name="trim">
+          <property name="text">
+           <string>Auto-trim glyphs</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="borderLeft"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="label_13">
             <property name="text">
-             <string>Add</string>
+             <string>Border</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_2">
-            <property name="text">
-             <string>Update</string>
+          <item row="2" column="2">
+           <widget class="QSpinBox" name="borderTop">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>false</bool>
+            </property>
+            <property name="accelerated">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QSpinBox" name="borderBottom">
+            <property name="value">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QSpinBox" name="borderRight">
+            <property name="value">
+             <number>1</number>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="listOfFonts">
-          <property name="plainText">
-           <string>Pt Sans Caption, 37 pt smooth border</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <property name="bottomMargin">
+           <number>0</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Texture size:</string>
-          </property>
-         </widget>
+          <item>
+           <widget class="QCheckBox" name="merge">
+            <property name="text">
+             <string>Merging</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mergeBF">
+            <property name="text">
+             <string>Brute-force merging</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Texture size:</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QSpinBox" name="textureW">
             <property name="sizePolicy">
@@ -330,6 +425,9 @@
           </item>
           <item>
            <widget class="QComboBox" name="comboHeuristic">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
             <item>
              <property name="text">
               <string>None</string>
@@ -374,6 +472,9 @@
           <property name="text">
            <string>Left to right filling</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -415,11 +516,25 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="bruteForce">
-          <property name="text">
-           <string>BRUTE-FORCE</string>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
+          <item>
+           <widget class="QPushButton" name="bruteForce">
+            <property name="text">
+             <string>BRUTE-FORCE</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="text">
+             <string>Update</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -429,26 +544,51 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLabel" name="label_10">
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Image format:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="outFormat">
+            <item>
+             <property name="text">
+              <string>PNG</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>BMP</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Encoding:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="encoding"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="transparent">
           <property name="text">
-           <string>Image format:</string>
+           <string>Transparent</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>8-bit encoding:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="encoding"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>TextLabel</string>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -459,59 +599,101 @@
           </property>
          </widget>
         </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="QScrollArea" name="scrollArea">
-      <property name="whatsThis">
-       <string>111111</string>
-      </property>
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>567</width>
-         <height>655</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLabel" name="preview">
+         <layout class="QHBoxLayout" name="horizontalLayout_12">
+          <item>
+           <widget class="QLineEdit" name="outDir">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>30</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <item>
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>File name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="outFile">
+            <property name="text">
+             <string>myfont</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_5">
           <property name="text">
-           <string>Preview</string>
+           <string>Export</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="FontView" name="widget" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Load/save project</string>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true"/>
-          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_16">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>9</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_7">
+             <property name="text">
+              <string>Load project...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_6">
+             <property name="text">
+              <string>Save project as...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
+         <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -526,6 +708,117 @@
        </layout>
       </widget>
      </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_17">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="preview">
+          <property name="text">
+           <string>Preview</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="currentIndex">
+           <number>3</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>800%</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>400%</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>200%</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>100%</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QScrollArea" name="scrollArea">
+        <property name="whatsThis">
+         <string>111111</string>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>565</width>
+           <height>619</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="FontView" name="widget" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -547,42 +840,13 @@
    <extends>QWidget</extends>
    <header location="global">fontview.h</header>
    <container>1</container>
+   <slots>
+    <slot>rescale(int)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>textureW</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateWidth(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>84</x>
-     <y>393</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>5</x>
-     <y>8</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>textureH</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateHeight(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>246</x>
-     <y>393</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>5</x>
-     <y>1</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
@@ -590,8 +854,8 @@
    <slot>addFont()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>80</x>
-     <y>283</y>
+     <x>92</x>
+     <y>159</y>
     </hint>
     <hint type="destinationlabel">
      <x>4</x>
@@ -606,12 +870,204 @@
    <slot>bruteForce()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>172</x>
-     <y>509</y>
+     <x>130</x>
+     <y>629</y>
     </hint>
     <hint type="destinationlabel">
      <x>2</x>
      <y>512</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>removeFont()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>206</x>
+     <y>151</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>254</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_4</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>getFolder()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>236</x>
+     <y>170</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>344</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_5</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>exportFont()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>233</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2</x>
+     <y>609</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trim</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>borderTop</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>100</x>
+     <y>341</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trim</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>borderRight</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>344</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>210</x>
+     <y>391</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trim</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>borderLeft</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>342</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>74</x>
+     <y>395</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trim</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>borderBottom</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>56</x>
+     <y>339</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>111</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trim</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_13</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>106</x>
+     <y>341</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>122</x>
+     <y>389</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>merge</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mergeBF</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>449</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>166</x>
+     <y>449</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_7</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>loadProject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>98</x>
+     <y>298</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2</x>
+     <y>315</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_6</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>saveProject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>295</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>widget</receiver>
+   <slot>rescale(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>798</x>
+     <y>14</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>56</y>
     </hint>
    </hints>
   </connection>
@@ -622,5 +1078,9 @@
   <slot>addFont()</slot>
   <slot>removeFont()</slot>
   <slot>bruteForce()</slot>
+  <slot>getFolder()</slot>
+  <slot>exportFont()</slot>
+  <slot>loadProject()</slot>
+  <slot>saveProject()</slot>
  </slots>
 </ui>

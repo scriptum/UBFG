@@ -14,8 +14,10 @@ protected:
     void paintEvent(QPaintEvent *event);
 private:
     QPixmap texture;
+    int scale;
 private slots:
     void updatePixmap(const QImage &image);
+    void rescale(int);
 };
 
 #endif // FONTVIEW_H

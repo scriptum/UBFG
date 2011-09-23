@@ -8,14 +8,14 @@
 //#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imagepacker.h"
-class FontRender : public QThread
+class FontRender : public QObject
 {
      Q_OBJECT
 public:
     FontRender(Ui_MainWindow *ui = 0);
     ~FontRender();
-    void run();
     bool done;
+    bool exporting;
 
 signals:
         void renderedImage(const QImage &image);
@@ -25,6 +25,8 @@ private:
     QObject p;
     Ui_MainWindow *ui;
     ImagePacker packer;
+public slots:
+    void run();
 };
 
 #endif // FONTRENDER_H

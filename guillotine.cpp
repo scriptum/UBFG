@@ -1,5 +1,5 @@
 #include "guillotine.h"
-#include "imagepacker.h"
+
 Guillotine::Guillotine(Guillotine* _head)
 {
     if(_head)
@@ -71,6 +71,7 @@ void Guillotine::heuristic(QImage * img, int lvl)
 
 Guillotine* Guillotine::insertNode(QImage * img)
 {
+    int x, y;
     head->duplicate = false;
     if (!leaf)//we're not a leaf then
     {
@@ -89,7 +90,7 @@ Guillotine* Guillotine::insertNode(QImage * img)
         if (image)
         {
             //qDebug("123");
-            if(image->operator ==(*img))
+            if(head->packer->compareImages(image, img, &x, &y))
             {
                 head->duplicate = true;
                 return this;
@@ -102,24 +103,17 @@ Guillotine* Guillotine::insertNode(QImage * img)
         //(if we're just right, accept)
         if (img->width() == rc.width() && img->height() == rc.height())
         {
-            //qDebug("123");
             image = img;
-
             return this;
         }
         //здесь можно добавить эвристический анализ: в какой блок лучше всего запихнуть нашу картинку
         head->heurBestFit = NULL;
         head->heurMin = 99999999;
         head->heurMax = 0;
-        //qDebug("---- %d", head);
         head->heuristic(img);
-        //qDebug("%d", heurMin);
         Guillotine * p = head->heurBestFit;
-        //qDebug("%d   %d", p, heurMax);
-        if(!p) {p = this;
-        //    qDebug("%d", p);
-        }
-        //return 0;
+        if(!p)
+            p = this;
         //(otherwise, gotta split this Guillotine and create some kids)
         p->child[0] = new Guillotine(head);
         p->child[1] = new Guillotine(head);

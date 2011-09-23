@@ -8,7 +8,7 @@ ImagePacker::ImagePacker()
 //pack images, return list of positions
 QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur, uint w, uint h)
 {
-    int i, j;
+    int i, j, x, y;
     QList<packedImage*> images;
     for(i = 0; i < im->size(); i++)
         images << &im->operator [](i);
@@ -17,7 +17,7 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
 
     QList<QPoint> out;
     Guillotine *head = new Guillotine;
-    Guillotine *n, *p;
+    Guillotine *n;
     missingChars = 0;
     area = 0;
     mergedChars = 0;
@@ -26,16 +26,14 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
     {
     case GUILLOTINE:
 
-        //qDebug("%d %d %d %d", n->rc.x(), n->rc.y(), n->rc.width(), n->rc.height());
         head->rc = QRect(0, 0, w, h);
         head->head = head;
         head->heuristicMethod = heur;
-        //qDebug("%d %d %d %d", head->rc.x(), head->rc.y(), head->rc.width(), head->rc.height());
+        head->packer = this;
 
         for(i = 0; i < images.size(); i++)
         {
             n = head->insertNode(&images.operator [](i)->img);
-            //qDebug("%d %d %d %d", n->rc.x(), n->rc.y(), n->rc.width(), n->rc.height());
             if(n)
             {
                 if(!head->duplicate)
@@ -51,12 +49,10 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
                 images.operator [](i)->rc = QRect(99999, 00000, images.at(i)->rc.width(), images.at(i)->rc.height());
                 missingChars++;
             }
+            if(!head->duplicate)
+                neededArea += images.at(i)->img.width() * images.at(i)->img.height();
         }
-        //p = head->child[0]->child[1];
-        //qDebug("%d", p);
         head->delGuillotine();
-        //delete p;
-        //qDebug("%d", p->child);
         break;
     case MAXRECTS:
         MaxRects rects;
@@ -66,27 +62,21 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
         rects.F << mrn;
         rects.heuristic = heur;
         rects.leftToRight = ltr;
-
-        //qDebug("%d%", rects.F.at(0).r.width());
         QPoint pt;
         bool t;
         for(i = 0; i < images.size(); i++)
         {
-
-            //qDebug("%d", images.operator [](i)->rc.width());
             t = false;
             for(j = 0; j < out.size(); j++)
             {
-                if(images.at(j)->img.operator ==(images.at(i)->img))
+                if(compareImages(&images.at(j)->img, &images.at(i)->img, &x, &y))
                 {
-                    pt = out.at(j);
+                    pt = out.at(j)+QPoint(x, y);
                     t = true;
                     mergedChars++;
                     break;
                 }
             }
-
-            //qDebug("%d", images.operator [](i)->rc.width());
             if(!t)
                 pt = rects.insertNode(&images.operator [](i)->img);
             if(pt != QPoint(999999,999999))
@@ -96,8 +86,6 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
             }
             else
                 missingChars++;
-
-            //qDebug("%d", images.operator [](i)->rc.width());
             if(!t)
                 neededArea += images.at(i)->img.width() * images.at(i)->img.height();
             out << pt;
@@ -105,8 +93,48 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
 
 
         }
-        //qDebug("%d", rects.F.size());
         break;
     }
     return out;
+}
+
+bool ImagePacker::compareImages(QImage* img1, QImage* img2, int* ii, int *jj)
+{
+    if(!merge) return false;
+    if(!mergeBF) return img1->operator ==(*img2);
+    int i1w = img1->width();
+    int i1h = img1->height();
+    int i2w = img2->width();
+    int i2h = img2->height();
+    int i, j, x, y;
+    bool t;
+    if(i1w >= i2w && i1h >= i2h)
+    {
+        for(i = 0; i <= i1w - i2w; i++)
+        {
+            for (j = 0; j <= i1h - i2h; j++)
+            {
+                t = true;
+                for (y = 0; y < i2h; y++)
+                {
+                    for (x = 0; x < i2w; x++)
+                    {
+                        if(img1->pixel(x+i, y+j) != img2->pixel(x,y))
+                        {
+                            t = false;
+                            break;
+                        }
+                    }
+                    if(t == false) break;
+                }
+                if(t)
+                {
+                    *ii = i;
+                    *jj = j;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }

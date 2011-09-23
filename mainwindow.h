@@ -15,15 +15,24 @@ public:
 
 protected:
     void changeEvent(QEvent *e);
+    void closeEvent(QCloseEvent *event);
+    void writeSettings();
+    void readSettings();
 
 private:
     Ui::MainWindow *ui;
     FontRender *thread;
+    QString projectDir;
+    QString project;
+    QString homeDir, outFile;
 private slots:
-    void updateWidth(int w);
-    void updateHeight(int h);
     void addFont();
+    void removeFont();
     void bruteForce();
+    void getFolder();
+    void exportFont();
+    void saveProject();
+    void loadProject();
 };
 
 #endif // MAINWINDOW_H

@@ -2,6 +2,7 @@
 
 FontView::FontView(QWidget *parent)
 {
+    scale = 1;
 }
 
 
@@ -9,7 +10,8 @@ void FontView::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     painter.fillRect(rect(), Qt::magenta);
-    painter.drawPixmap(0, 0, texture);
+    this->setMinimumSize(texture.width()*scale, texture.height()*scale);
+    painter.drawPixmap(0, 0, this->width(), this->height(), texture);
 }
 
 
@@ -21,4 +23,24 @@ void FontView::updatePixmap(const QImage &image)
     update();
 
     //qDebug("%d %d", texture.width(), texture.height());
+}
+
+void FontView::rescale(int index)
+{
+    switch(index)
+    {
+        case 0:
+            scale = 8;
+            break;
+        case 1:
+            scale = 4;
+            break;
+        case 2:
+            scale = 2;
+            break;
+        case 3:
+            scale = 1;
+            break;
+    }
+    this->update();
 }
