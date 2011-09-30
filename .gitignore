@@ -1,0 +1,8 @@
+*.o
+*.d
+*.exe
+*.dll
+font
+Makefile
+moc_*
+ui_*.h
