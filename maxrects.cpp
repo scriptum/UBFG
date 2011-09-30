@@ -24,7 +24,8 @@ QPoint MaxRects::insertNode(QImage * img)
                     i = F.size();
                     continue;
                 case ImagePacker::TL:
-                    m = F.at(i).r.y() + F.at(i).r.x()/10;
+                    //~ m = F.at(i).r.y() + F.at(i).r.x()/10;
+                    m = F.at(i).r.y();
                     break;
                 case ImagePacker::BAF:
                     m = F.at(i).r.width() * F.at(i).r.height();
@@ -41,13 +42,13 @@ QPoint MaxRects::insertNode(QImage * img)
                 case ImagePacker::MINH:
                     m = F.at(i).r.height();
             }
-            if(leftToRight)
-            {
-                if(F.at(i).r.x() == nextx && ltr)
-                    m -= 100;
-                if(F.at(i).r.x() == prevx && !ltr)
-                    m -= 10000;
-            }
+            //~ if(leftToRight)
+            //~ {
+                //~ if(F.at(i).r.x() == nextx && ltr)
+                    //~ m -= 100;
+                //~ if(F.at(i).r.x() == prevx && !ltr)
+                    //~ m -= 10000;
+            //~ }
             //if(F.at(i).r.y() == nexty)
             //    m -= 1000;
             //if(F.at(i).r.width() == img->width() && F.at(i).r.height() == img->height()) m-= 100000;
@@ -56,22 +57,38 @@ QPoint MaxRects::insertNode(QImage * img)
                 min = m;
                 mini = i;
             }
-            //qDebug("# %d", m);
         }
     }
-    //if(min < -5000)
-    //qDebug(" -- %d %d %d", i, F.at(i).r.width(), F.at(i).r.height());
     if(mini>=0)
     {
         i = mini;
-        //qDebug("%d %d", F.at(i).r.width(), F.at(i).r.height());
         MaxRectsNode n0;
-        if(!ltr)
-            n0.r = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
-        else
-        {
-            n0.r = QRect(F.at(i).r.x(), F.at(i).r.y(), img->width(), img->height());
-        }
+        //~ if(!ltr)
+            //~ n0.r = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
+        //~ else
+        //~ {
+            bool leftNeighbor = false, rightNeighbor = false;
+            int k;
+            QRect buf(F.at(i).r.x(), F.at(i).r.y(), img->width(), img->height());
+            if(heuristic == ImagePacker::TL) {
+                for(k = 0; k < R.size(); k++)
+                {
+                    if(qAbs(R.at(k).y() + R.at(k).height()/2 - F.at(i).r.y() - F.at(i).r.height()/2) < 
+                        qMax(R.at(k).height(), F.at(i).r.height())/2)
+                    {
+                        if(R.at(k).x() + R.at(k).width() == F.at(i).r.x()) leftNeighbor = true;
+                        if(R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()) rightNeighbor = true;
+                    }
+                    //~ qDebug() << k;
+                }
+                if(!leftNeighbor && F.at(i).r.x() != 0 && F.at(i).r.width() + F.at(i).r.x() == w)
+                    buf = QRect(w - img->width(), F.at(i).r.y(), img->width(), img->height());
+                if(!leftNeighbor && rightNeighbor)
+                    buf = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
+            }
+            n0.r = buf;
+        //~ }
+        R << buf;
         n0.i = img;
         nextx = n0.r.x() + n0.r.width();
         nexty = F.at(i).r.y() + img->height();
@@ -79,14 +96,12 @@ QPoint MaxRects::insertNode(QImage * img)
         if(F.at(i).r.width() > img->width())
         {
             MaxRectsNode n;
-            if(!ltr)
-                n.r = QRect(F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
-            else
-                n.r = QRect(F.at(i).r.x()+img->width(), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
+            //~ if(!ltr)
+                //~ n.r = QRect(F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
+            //~ else
+                n.r = QRect(F.at(i).r.x()+(buf.x()==F.at(i).r.x()?img->width():0), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
             n.i = NULL;
             F<<n;
-            //qDebug("%d %d", F.at(i).b.t.x(), F.at(i).b.t.y());
-            //qDebug(" (1)");
         }
         if(F.at(i).r.height() > img->height())
         {
@@ -94,18 +109,14 @@ QPoint MaxRects::insertNode(QImage * img)
             n.r = QRect(F.at(i).r.x(), F.at(i).r.y()+img->height(), F.at(i).r.width(), F.at(i).r.height() - img->height());
             n.i = NULL;
             F<<n;
-            //qDebug(" (2)");
         }
+        
         F.removeAt(i);
-        //qDebug("%d", F.size());
         //intersect
         for(i = 0; i < F.size(); i++)
         {
-            //qDebug(" ++ %d - %d %d %d %d", i, F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width(), F.at(i).r.height());
             if(F.at(i).r.intersects(n0.r))
             {
-                //qDebug("  %d - %d %d %d %d || %d %d %d %d", i, F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width(), F.at(i).r.height(), n0.r.x(), n0.r.y(),n0.r.width(),n0.r.height());
-                //qDebug("!!!!");
                 if(n0.r.x() + n0.r.width() < F.at(i).r.x() + F.at(i).r.width())
                 {
                     MaxRectsNode n;
@@ -139,9 +150,8 @@ QPoint MaxRects::insertNode(QImage * img)
                 F.removeAt(i);
                 i--;
             }
-
         }
-        //qDebug(" (3)");
+        
         for(i = 0; i < F.size(); i++)
         {
             for(j = i + 1; j < F.size(); j++)
@@ -153,7 +163,6 @@ QPoint MaxRects::insertNode(QImage * img)
                 }
             }
         }
-        //for(i = 0; i < F.size(); i++)qDebug(" -- %d - %d %d %d %d", i, F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width(), F.at(i).r.height());
         return QPoint(n0.r.x(), n0.r.y());
     }
     return QPoint(999999, 999999);

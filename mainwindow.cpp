@@ -153,7 +153,6 @@ void MainWindow::loadProject()
         ui->textureH->setValue(settings.value("textureH", 512).toInt());
         ui->comboMethod->setCurrentIndex(settings.value("method", 1).toInt());
         ui->comboHeuristic->setCurrentIndex(settings.value("heuristic", 1).toInt());
-        ui->checkLTR->setChecked(settings.value("left_to_right", true).toBool());
         ui->sortOrder->setCurrentIndex(settings.value("sortOrder", 2).toInt());
         ui->outFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
         ui->encoding->setCurrentIndex(settings.value("encoding", 0).toInt());
@@ -196,7 +195,6 @@ void MainWindow::saveProject()
         settings.setValue("textureH", ui->textureH->value());
         settings.setValue("method", ui->comboMethod->currentIndex());
         settings.setValue("heuristic", ui->comboHeuristic->currentIndex());
-        settings.setValue("left_to_right", ui->checkLTR->isChecked());
         settings.setValue("sortOrder", ui->sortOrder->currentIndex());
         settings.setValue("outFormat", ui->outFormat->currentIndex());
         settings.setValue("encoding", ui->encoding->currentIndex());

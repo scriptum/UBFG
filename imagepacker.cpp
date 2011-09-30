@@ -62,6 +62,8 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
         rects.F << mrn;
         rects.heuristic = heur;
         rects.leftToRight = ltr;
+        rects.w = w;
+        rects.h = h;
         QPoint pt;
         bool t;
         for(i = 0; i < images.size(); i++)

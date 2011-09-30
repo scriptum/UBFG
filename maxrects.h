@@ -18,9 +18,10 @@ class MaxRects
 public:
     MaxRects();
     QList<MaxRectsNode> F;
+    QList<QRect> R;
     QList<MaxRectsNode*> FR;
     QPoint insertNode(QImage * img);
-    int heuristic;
+    int heuristic, w, h;
     bool leftToRight;
 };
 

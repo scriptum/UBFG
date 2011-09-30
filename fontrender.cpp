@@ -123,7 +123,6 @@ void FontRender::run()
     }
     QList<QPoint> points;
     uint width = ui->textureW->value(), height = ui->textureH->value();
-    packer.ltr = ui->checkLTR->isChecked();
     //~ qDebug("bol %d", packer.ltr);
     points = packer.pack(&list, ui->comboMethod->currentIndex(), ui->comboHeuristic->currentIndex(), width, height);
     QImage texture(width, height, QImage::Format_ARGB32);

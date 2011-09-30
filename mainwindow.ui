@@ -176,7 +176,7 @@
          <widget class="QListWidget" name="listOfFonts">
           <item>
            <property name="text">
-            <string notr="true">Arial, 36 pt smooth</string>
+            <string notr="true">Arial, 37 pt smooth</string>
            </property>
            <property name="flags">
             <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
@@ -466,16 +466,6 @@
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkLTR">
-          <property name="text">
-           <string>Left to right filling</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
