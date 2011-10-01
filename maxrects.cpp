@@ -12,7 +12,7 @@ QPoint MaxRects::insertNode(QImage * img)
         return QPoint(0,0);
     static int nextx = 0, nexty = 0, prevx;
     static bool ltr = true;
-
+    bool leftNeighbor, rightNeighbor, _leftNeighbor, _rightNeighbor;
     for(i = 0; i < F.size(); i++)
     {
         if(F.at(i).r.width() >= img->width() && F.at(i).r.height() >= img->height())
@@ -26,14 +26,15 @@ QPoint MaxRects::insertNode(QImage * img)
                 case ImagePacker::TL:
                     //~ m = F.at(i).r.y() + F.at(i).r.x()/10;
                     m = F.at(i).r.y();
+                    _leftNeighbor = _rightNeighbor = false;
                     for(int k = 0; k < R.size(); k++)
                     {
                         if(qAbs(R.at(k).y() + R.at(k).height()/2 - F.at(i).r.y() - F.at(i).r.height()/2) < 
                             qMax(R.at(k).height(), F.at(i).r.height())/2)
                         {
-                            if(R.at(k).x() + R.at(k).width() == F.at(i).r.x() || R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()){m -= 2; break;}
+                            if(R.at(k).x() + R.at(k).width() == F.at(i).r.x()){m -= 2; _leftNeighbor = true;}
+                            if(R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()){m -= 2; _rightNeighbor = true;}
                         }
-                        //~ qDebug() << k;
                     }
                     break;
                 case ImagePacker::BAF:
@@ -51,20 +52,12 @@ QPoint MaxRects::insertNode(QImage * img)
                 case ImagePacker::MINH:
                     m = F.at(i).r.height();
             }
-            //~ if(leftToRight)
-            //~ {
-                //~ if(F.at(i).r.x() == nextx && ltr)
-                    //~ m -= 100;
-                //~ if(F.at(i).r.x() == prevx && !ltr)
-                    //~ m -= 10000;
-            //~ }
-            //if(F.at(i).r.y() == nexty)
-            //    m -= 1000;
-            //if(F.at(i).r.width() == img->width() && F.at(i).r.height() == img->height()) m-= 100000;
             if(m < min)
             {
                 min = m;
                 mini = i;
+                leftNeighbor = _leftNeighbor;
+                rightNeighbor = _rightNeighbor;
             }
         }
     }
@@ -72,31 +65,15 @@ QPoint MaxRects::insertNode(QImage * img)
     {
         i = mini;
         MaxRectsNode n0;
-        //~ if(!ltr)
-            //~ n0.r = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
-        //~ else
-        //~ {
-            bool leftNeighbor = false, rightNeighbor = false;
-            int k;
-            QRect buf(F.at(i).r.x(), F.at(i).r.y(), img->width(), img->height());
-            if(heuristic == ImagePacker::TL) {
-                for(k = 0; k < R.size(); k++)
-                {
-                    if(qAbs(R.at(k).y() + R.at(k).height()/2 - F.at(i).r.y() - F.at(i).r.height()/2) < 
-                        qMax(R.at(k).height(), F.at(i).r.height())/2)
-                    {
-                        if(R.at(k).x() + R.at(k).width() == F.at(i).r.x()) leftNeighbor = true;
-                        if(R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()) rightNeighbor = true;
-                    }
-                    //~ qDebug() << k;
-                }
-                if(!leftNeighbor && F.at(i).r.x() != 0 && F.at(i).r.width() + F.at(i).r.x() == w)
-                    buf = QRect(w - img->width(), F.at(i).r.y(), img->width(), img->height());
-                if(!leftNeighbor && rightNeighbor)
-                    buf = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
-            }
-            n0.r = buf;
-        //~ }
+        int k;
+        QRect buf(F.at(i).r.x(), F.at(i).r.y(), img->width(), img->height());
+        if(heuristic == ImagePacker::TL) {
+            if(!leftNeighbor && F.at(i).r.x() != 0 && F.at(i).r.width() + F.at(i).r.x() == w)
+                buf = QRect(w - img->width(), F.at(i).r.y(), img->width(), img->height());
+            if(!leftNeighbor && rightNeighbor)
+                buf = QRect(F.at(i).r.x() + F.at(i).r.width() - img->width(), F.at(i).r.y(), img->width(), img->height());
+        }
+        n0.r = buf;
         R << buf;
         n0.i = img;
         nextx = n0.r.x() + n0.r.width();
