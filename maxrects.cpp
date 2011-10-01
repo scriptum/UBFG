@@ -26,6 +26,15 @@ QPoint MaxRects::insertNode(QImage * img)
                 case ImagePacker::TL:
                     //~ m = F.at(i).r.y() + F.at(i).r.x()/10;
                     m = F.at(i).r.y();
+                    for(int k = 0; k < R.size(); k++)
+                    {
+                        if(qAbs(R.at(k).y() + R.at(k).height()/2 - F.at(i).r.y() - F.at(i).r.height()/2) < 
+                            qMax(R.at(k).height(), F.at(i).r.height())/2)
+                        {
+                            if(R.at(k).x() + R.at(k).width() == F.at(i).r.x() || R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()){m -= 2; break;}
+                        }
+                        //~ qDebug() << k;
+                    }
                     break;
                 case ImagePacker::BAF:
                     m = F.at(i).r.width() * F.at(i).r.height();
