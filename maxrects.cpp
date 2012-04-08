@@ -24,7 +24,6 @@ QPoint MaxRects::insertNode(QImage * img)
                     i = F.size();
                     continue;
                 case ImagePacker::TL:
-                    //~ m = F.at(i).r.y() + F.at(i).r.x()/10;
                     m = F.at(i).r.y();
                     _leftNeighbor = _rightNeighbor = false;
                     for(int k = 0; k < R.size(); k++)
@@ -82,10 +81,7 @@ QPoint MaxRects::insertNode(QImage * img)
         if(F.at(i).r.width() > img->width())
         {
             MaxRectsNode n;
-            //~ if(!ltr)
-                //~ n.r = QRect(F.at(i).r.x(), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
-            //~ else
-                n.r = QRect(F.at(i).r.x()+(buf.x()==F.at(i).r.x()?img->width():0), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
+            n.r = QRect(F.at(i).r.x()+(buf.x()==F.at(i).r.x()?img->width():0), F.at(i).r.y(), F.at(i).r.width() - img->width(), F.at(i).r.height());
             n.i = NULL;
             F<<n;
         }

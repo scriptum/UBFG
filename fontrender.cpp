@@ -75,7 +75,6 @@ void FontRender::run()
         font.setStyleStrategy(QFont::NoAntialias);
         for(i = 2; i < flist2.size(); i++)
         {
-
             if(flist2.at(i) == "smooth")
                 font.setStyleStrategy((QFont::StyleStrategy)(QFont::PreferDevice|QFont::PreferMatch));
             else if(flist2.at(i) == "b")
@@ -94,6 +93,7 @@ void FontRender::run()
         //rendering glyphs
         for (i = 0; i < s.size(); i++)
         {
+            if(s.indexOf(s.at(i), i+1) > 0) continue;
             //rc = fm.tightBoundingRect(s.at(i));
             w = fm.size(Qt::TextSingleLine, s.at(i)).width();
             h = fm.height();
