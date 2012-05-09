@@ -4,6 +4,8 @@
 #include <QTextCodec>
 #include <QFileDialog>
 #include <QSettings>
+#include <QColorDialog>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -37,8 +39,10 @@ void MainWindow::changeEvent(QEvent *e)
     switch (e->type()) {
     case QEvent::LanguageChange:
         ui->retranslateUi(this);
+        e->accept();
         break;
     default:
+        QWidget::changeEvent(e);
         break;
     }
 }
@@ -214,4 +218,33 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     writeSettings();
     event->accept();
+}
+
+void MainWindow::bitDepthChanged(int index) {
+    if (index == 1) 
+        ui->transparent->setDisabled(true);
+    else
+        ui->transparent->setDisabled(false);
+}
+
+void MainWindow::changeFontColor() {
+    QPalette buttonPal = ui->fontColor->palette();
+    QColor selectedColor = QColorDialog::getColor(buttonPal.brush(QPalette::Button).color(), NULL, "Font Color");
+    QBrush brush(selectedColor);
+    brush.setStyle(Qt::SolidPattern);
+    buttonPal.setBrush(QPalette::Active, QPalette::Button, brush);
+    buttonPal.setBrush(QPalette::Inactive, QPalette::Button, brush);
+    buttonPal.setBrush(QPalette::Disabled, QPalette::Button, brush);
+    ui->fontColor->setPalette(buttonPal);
+}
+
+void MainWindow::changeBkgColor() {
+    QPalette buttonPal = ui->backgroundColor->palette();
+    QColor selectedColor = QColorDialog::getColor(buttonPal.brush(QPalette::Button).color(), NULL, "Font Color");
+    QBrush brush(selectedColor);
+    brush.setStyle(Qt::SolidPattern);
+    buttonPal.setBrush(QPalette::Active, QPalette::Button, brush);
+    buttonPal.setBrush(QPalette::Inactive, QPalette::Button, brush);
+    buttonPal.setBrush(QPalette::Disabled, QPalette::Button, brush);
+    ui->backgroundColor->setPalette(buttonPal);
 }
