@@ -33,6 +33,9 @@ private slots:
     void exportFont();
     void saveProject();
     void loadProject();
+    void bitDepthChanged(int index);
+    void changeFontColor();
+    void changeBkgColor();
 };
 
 #endif // MAINWINDOW_H

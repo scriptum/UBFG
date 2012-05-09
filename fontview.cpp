@@ -29,16 +29,16 @@ void FontView::rescale(int index)
 {
     switch(index)
     {
-        case 0:
+        case 3:
             scale = 8;
             break;
-        case 1:
+        case 2:
             scale = 4;
             break;
-        case 2:
+        case 1:
             scale = 2;
             break;
-        case 3:
+        case 0:
             scale = 1;
             break;
     }
