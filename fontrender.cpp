@@ -35,12 +35,12 @@ void FontRender::run()
     for(k = 0; k < ui->listOfFonts->count(); k++)
     {
         // extract font paramaters
-        QStringList flist = ui->listOfFonts->item(k)->text().split(QString(", "), QString::SkipEmptyParts);
-        if(flist.size() != 2) continue;
-        QStringList flist2 = flist.at(1).split(' ', QString::SkipEmptyParts);
-        if(flist2.size() < 2) continue;
+        QStringList fontName = ui->listOfFonts->item(k)->text().split(QString(", "), QString::SkipEmptyParts);
+        if(fontName.size() != 2) continue;
+        QStringList fontOptList = fontName.at(1).split(' ', QString::SkipEmptyParts);
+        if(fontOptList.size() < 2) continue;
         // make font record and qfont
-        FontRec fontRec(flist.at(0), flist2.at(0).toInt(), FontRec::GetMetric(flist2.at(1)), FontRec::GetStyle(flist.mid(2)));
+        FontRec fontRec(fontName.at(0), fontOptList.at(0).toInt(), FontRec::GetMetric(fontOptList.at(1)), FontRec::GetStyle(fontOptList.mid(2)));
         QFont   font(fontRec.m_font);
         // set fonst size
         if (FontRec::POINTS == fontRec.m_metric)

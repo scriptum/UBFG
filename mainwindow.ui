@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>679</number>
+             <number>63</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -1097,6 +1097,9 @@
           </item>
           <item>
            <widget class="QComboBox" name="bitDepth">
+            <property name="currentIndex">
+             <number>2</number>
+            </property>
             <item>
              <property name="text">
               <string>8 bit</string>
@@ -1311,8 +1314,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>573</width>
-           <height>715</height>
+           <width>563</width>
+           <height>705</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
