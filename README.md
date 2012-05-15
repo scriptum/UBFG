@@ -39,4 +39,4 @@ Here:
 
 Screenshot:
 
-![Screenshot](http://ompldr.org/vYWVtZA.png)
+![Screenshot](https://github.com/scriptum/UBFG/raw/master/screenshot.png)
