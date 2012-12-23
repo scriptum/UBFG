@@ -8,18 +8,148 @@
 #include <QTextStream>
 #include <QBuffer>
 #include <stdio.h>
+#include <math.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 FontRender::FontRender(Ui_MainWindow *_ui) : ui(_ui)
 { }
 
 FontRender::~FontRender()
 { }
 
+#define WIDTH  1024
+#define HEIGHT 1024
+
+struct Point
+{
+	int dx, dy;
+
+	int DistSq() const { return dx*dx + dy*dy; }
+};
+
+struct Grid
+{
+	Point grid[HEIGHT][WIDTH];
+};
+
+Point pointInside = { 0, 0 };
+Point pointEmpty = { 9999, 9999 };
+Grid grid1, grid2;
+
+Point Get(Grid &g, int x, int y, int maxW, int maxH)
+{
+	// OPTIMIZATION: you can skip the edge check code if you make your grid
+	// have a 1-pixel gutter.
+	if ( x >= 0 && y >= 0 && x < maxW && y < maxH )
+		return g.grid[y][x];
+	else
+		return pointEmpty;
+}
+
+void Put( Grid &g, int x, int y, const Point &p )
+{
+	g.grid[y][x] = p;
+}
+
+void Compare( Grid &g, Point &p, int x, int y, int offsetx, int offsety, int maxW, int maxH )
+{
+	Point other = Get( g, x+offsetx, y+offsety, maxW, maxH );
+	other.dx += offsetx;
+	other.dy += offsety;
+
+	if (other.DistSq() < p.DistSq())
+		p = other;
+}
+
+void GenerateSDF(Grid &g, int maxW, int maxH)
+{
+	// Pass 0
+	for (int y=0;y<maxH;y++)
+	{
+		for (int x=0;x<maxW;x++)
+		{
+			Point p = Get( g, x, y, maxW, maxH );
+			Compare( g, p, x, y, -1,  0, maxW, maxH );
+			Compare( g, p, x, y,  0, -1, maxW, maxH );
+			Compare( g, p, x, y, -1, -1, maxW, maxH );
+			Compare( g, p, x, y,  1, -1, maxW, maxH );
+			Put( g, x, y, p );
+		}
+
+		for (int x=maxW-1;x>=0;x--)
+		{
+			Point p = Get( g, x, y, maxW, maxH );
+			Compare( g, p, x, y, 1, 0, maxW, maxH );
+			Put( g, x, y, p );
+		}
+	}
+
+	// Pass 1
+	for (int y=maxH-1;y>=0;y--)
+	{
+		for (int x=maxW-1;x>=0;x--)
+		{
+			Point p = Get( g, x, y, maxW, maxH );
+			Compare( g, p, x, y,  1,  0, maxW, maxH );
+			Compare( g, p, x, y,  0,  1, maxW, maxH );
+			Compare( g, p, x, y, -1,  1, maxW, maxH );
+			Compare( g, p, x, y,  1,  1, maxW, maxH );
+			Put( g, x, y, p );
+		}
+
+		for (int x=0;x<maxW;x++)
+		{
+			Point p = Get( g, x, y, maxW, maxH );
+			Compare( g, p, x, y, -1, 0, maxW, maxH );
+			Put( g, x, y, p );
+		}
+	}
+}
+
+void dfcalculate(QImage *img, int distanceFieldScale, bool exporting)
+{
+	int x, y;
+	int maxW = img->width(), maxH = img->height();
+	for(y = 0; y < maxH; y++)
+		for(x = 0; x < maxW; x++)
+		{
+			if ( qGreen(img->pixel(x, y)) < 128 )
+			{
+				Put( grid1, x, y, pointInside );
+				Put( grid2, x, y, pointEmpty );
+			} else {
+				Put( grid2, x, y, pointInside );
+				Put( grid1, x, y, pointEmpty );
+			}
+		}
+	// Generate the SDF.
+	GenerateSDF(grid1, maxW, maxH );
+	GenerateSDF(grid2, maxW, maxH );
+	for(y = 0; y < maxH; y++)
+		for(x = 0; x < maxW; x++)
+		{
+			// Calculate the actual distance from the dx/dy
+			double dist1 = sqrt( (double)Get( grid1, x, y, maxW, maxH ).DistSq() );
+			double dist2 = sqrt( (double)Get( grid2, x, y, maxW, maxH ).DistSq() );
+			double dist = dist1 - dist2;
+			// Clamp and scale it, just for display purposes.
+			int c = dist * distanceFieldScale + 128;
+			if ( c < 0 ) c = 0;
+			if ( c > 255 ) c = 255;
+			if(exporting)
+				img->setPixel(x, y, qRgba(255,255,255,c));
+			else
+				img->setPixel(x, y, qRgb(c,c,c));
+		}
+}
+
 void FontRender::run()
 {
-    done = false;
+	done = false;
     QList<FontRec> fontLst;
     QList<packedImage> glyphLst;
-    int i, k, w, h, base;
+	int i, k, base;
+	uint width, height;
     QImage::Format baseTxtrFormat = QImage::Format_ARGB32;
     QString s = ui->plainTextEdit->toPlainText();
     packer.sortOrder = ui->sortOrder->currentIndex();
@@ -31,8 +161,16 @@ void FontRender::run()
     packer.merge = ui->merge->isChecked();
     packer.mergeBF = ui->mergeBF->isChecked();
     QColor fontColor = ui->fontColor->palette().brush(QPalette::Button).color();
-    QColor bkgColor = ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::transparent : ui->backgroundColor->palette().brush(QPalette::Button).color();
-    for(k = 0; k < ui->listOfFonts->count(); k++)
+	QColor bkgColor = ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::transparent : ui->backgroundColor->palette().brush(QPalette::Button).color();
+	bool distanceField;
+	if(ui->distanceField->isChecked())
+		distanceField = true;
+	else
+		distanceField = false;
+	int distanceFieldScale = 8;
+	if(!distanceField)
+		distanceFieldScale = 1;
+	for(k = 0; k < ui->listOfFonts->count(); k++)
     {
         // extract font paramaters
         QStringList fontName = ui->listOfFonts->item(k)->text().split(QString(", "), QString::SkipEmptyParts);
@@ -44,9 +182,9 @@ void FontRender::run()
         QFont   font(fontRec.m_font);
         // set fonst size
         if (FontRec::POINTS == fontRec.m_metric)
-            font.setPointSize(fontRec.m_size);
+			font.setPointSize(fontRec.m_size * distanceFieldScale);
         else
-            font.setPixelSize(fontRec.m_size);
+			font.setPixelSize(fontRec.m_size * distanceFieldScale);
         // set font style
         font.setStyleStrategy(QFont::NoAntialias);
         if (fontRec.m_style & FontRec::SMOOTH)
@@ -59,31 +197,47 @@ void FontRender::run()
         QFontMetrics fm(font);
         for (i = 0; i < s.size(); i++)
         {
-            packedImage pi;
-            if(s.indexOf(s.at(i), i+1) > 0) continue;
-            w = fm.size(Qt::TextSingleLine, s.at(i)).width();
-            h = fm.height();
-            base = fm.ascent();
-            pi.img = QImage(w, h, baseTxtrFormat);
-            pi.img.fill(Qt::transparent);
-            pi.crop = QRect(0,0,w,h);
-            pi.ch = s.at(i);
-            QPainter p(&pi.img);
-            p.setFont(font);
+			packedImage packed_image;
+			if(s.indexOf(s.at(i), i + 1) > 0) continue;
+			width = fm.size(Qt::TextSingleLine, s.at(i)).width();
+			height = fm.height();
+			base = fm.ascent();
+			QImage buffer;
+			if(distanceField)
+			{
+				buffer = QImage(width, height, baseTxtrFormat);
+				buffer.fill(Qt::transparent);
+			}
+			else
+			{
+				packed_image.img = QImage(width, height, baseTxtrFormat);
+				packed_image.img.fill(Qt::transparent);
+			}
+			packed_image.crop = QRect(0,0,width,height);
+			packed_image.ch = s.at(i);
+			QPainter painter(distanceField ? &buffer : &packed_image.img);
+			painter.setFont(font);
             if(exporting)
-                p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+				painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
             else
-                p.fillRect(0,0,w,h, ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
-            p.setPen(fontColor);
-            p.drawText(0,base,s.at(i));
+				painter.fillRect(0, 0, width, height,
+								 ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
+			painter.setPen(fontColor);
+			painter.drawText(0,base,s.at(i));
+			if(distanceField)
+			{
+				dfcalculate(&buffer, distanceFieldScale, exporting);
+				packed_image.img = buffer.scaled(buffer.size() / 8);
+			}
             // add rendered glyph
-            glyphLst << pi;
+			glyphLst << packed_image;
             fontRec.m_glyphLst << &glyphLst.last();
         }
         fontLst << fontRec;
     }
     QList<QPoint> points;
-    uint width = ui->textureW->value(), height = ui->textureH->value();
+	width = ui->textureW->value();
+	height = ui->textureH->value();
     points = packer.pack(&glyphLst, ui->comboMethod->currentIndex(), ui->comboHeuristic->currentIndex(), width, height);
     QImage texture(width, height, baseTxtrFormat);
     texture.fill(bkgColor);

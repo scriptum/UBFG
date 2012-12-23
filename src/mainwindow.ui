@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>63</number>
+             <number>32</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -722,6 +722,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="distanceField">
+          <property name="text">
+           <string>Distance Field</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QGridLayout" name="gridLayout">
           <property name="bottomMargin">
            <number>0</number>
@@ -1315,7 +1322,7 @@
            <x>0</x>
            <y>0</y>
            <width>563</width>
-           <height>705</height>
+           <height>704</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
