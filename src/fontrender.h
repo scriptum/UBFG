@@ -16,6 +16,7 @@ public:
     ~FontRender();
     bool done;
     bool exporting;
+    bool bruteForce;
 
 signals:
         void renderedImage(const QImage &image);
@@ -55,8 +56,8 @@ private:
         int     m_style;
         QList<const packedImage*> m_glyphLst;
     };
-    void outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
-    void outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
+    bool outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
+    bool outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
     QImage texture;
     QList<QImage> glyphs;
     QObject p;

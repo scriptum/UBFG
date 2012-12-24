@@ -13,53 +13,66 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int heur, uint w, uint h
     for(i = 0; i < im->size(); i++)
         images << &im->operator [](i);
     crop(&images);
-    sort(&images);
 
     QList<QPoint> out;
-    missingChars = 0;
-    area = 0;
-    mergedChars = 0;
-    neededArea = 0;
 
-    MaxRects rects;
-    MaxRectsNode mrn;
-    mrn.r = QRect(0, 0, w, h);
-    mrn.i = NULL;
-    rects.F << mrn;
-    rects.heuristic = heur;
-    rects.leftToRight = ltr;
-    rects.w = w;
-    rects.h = h;
-    QPoint pt;
-    bool t;
-    for(i = 0; i < images.size(); i++)
+    int maxRepeats = 30;
+//    if(bruteForce == false)
+        maxRepeats = 1;
+
+    //repeat trying to find best solution
+//    for (int repeat = 0; repeat < maxRepeats; ++repeat)
     {
-        t = false;
-        for(j = 0; j < out.size(); j++)
+        sort(&images);
+        out.clear();
+        missingChars = 0;
+        area = 0;
+        mergedChars = 0;
+        neededArea = 0;
+
+        MaxRects rects;
+        MaxRectsNode mrn;
+        mrn.r = QRect(0, 0, w, h);
+        mrn.i = NULL;
+        rects.F << mrn;
+        rects.heuristic = heur;
+        rects.leftToRight = ltr;
+        rects.w = w;
+        rects.h = h;
+        QPoint pt;
+        bool t;
+        for(i = 0; i < images.size(); i++)
         {
-            if(compareImages(&images.at(j)->img, &images.at(i)->img, &x, &y))
+            images.at(i)->merged = false;
+            t = false;
+            for(j = 0; j < out.size(); j++)
             {
-                pt = out.at(j)+QPoint(x, y);
-                t = true;
-                mergedChars++;
-                break;
+                if(compareImages(&images.at(j)->img, &images.at(i)->img, &x, &y))
+                {
+                    pt = out.at(j)+QPoint(x, y);
+                    t = true;
+                    images.at(i)->merged = true;
+                    mergedChars++;
+                    break;
+                }
             }
-        }
-        if(!t)
-            pt = rects.insertNode(&images.operator [](i)->img);
-        if(pt != QPoint(999999,999999))
-        {
             if(!t)
-                area += images.at(i)->img.width() * images.at(i)->img.height();
+                pt = rects.insertNode(&images.operator [](i)->img);
+            if(pt != QPoint(999999,999999))
+            {
+                if(!t)
+                    area += images.at(i)->img.width() * images.at(i)->img.height();
+            }
+            else
+                missingChars++;
+            if(!t)
+                neededArea += images.at(i)->img.width() * images.at(i)->img.height();
+            out << pt;
+            images.operator [](i)->rc = QRect(pt.x(), pt.y(), images.at(i)->rc.width(), images.at(i)->rc.height());
         }
-        else
-            missingChars++;
-        if(!t)
-            neededArea += images.at(i)->img.width() * images.at(i)->img.height();
-        out << pt;
-        images.operator [](i)->rc = QRect(pt.x(), pt.y(), images.at(i)->rc.width(), images.at(i)->rc.height());
-
-
+//        qDebug("!!!!!! %d", missingChars);
+//        if(missingChars == 0) break;
+        //sortOrder = 4; //random sort
     }
     return out;
 }

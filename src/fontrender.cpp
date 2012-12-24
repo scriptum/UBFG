@@ -215,7 +215,7 @@ void FontRender::run()
                 packed_image.img = QImage(width, height, baseTxtrFormat);
                 packed_image.img.fill(Qt::transparent);
             }
-            packed_image.crop = QRect(0,0,width,height);
+
             packed_image.ch = s.at(i);
             QPainter painter(distanceField ? &buffer : &packed_image.img);
             painter.setFont(font);
@@ -231,6 +231,7 @@ void FontRender::run()
                 dfcalculate(&buffer, distanceFieldScale, exporting);
                 packed_image.img = buffer.scaled(buffer.size() / distanceFieldScale);
             }
+            packed_image.crop = packed_image.img.rect();
             // add rendered glyph
             glyphLst << packed_image;
             fontRec.m_glyphLst << &glyphLst.last();
@@ -249,26 +250,29 @@ void FontRender::run()
         // draw glyphs
         if(!ui->transparent->isChecked() || ui->transparent->isEnabled())
             p.fillRect(0,0,texture.width(),texture.height(), bkgColor);
-        for (i = 0; i < glyphLst.size(); ++i) {
-            p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
-        }
+        for (i = 0; i < glyphLst.size(); ++i)
+            if(glyphLst.at(i).merged == false)
+                    p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
+
         if (ui->transparent->isEnabled() && ui->transparent->isChecked()) {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::DiffuseAlphaDither | Qt::PreferDither);
+                texture.convertToFormat(QImage::Format_Indexed8, Qt::DiffuseAlphaDither | Qt::PreferDither);
         } else {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither |Qt::PreferDither);
+                texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither |Qt::PreferDither);
             else  // 24 bit image
-                texture = texture.convertToFormat(QImage::Format_RGB888, Qt::ThresholdAlphaDither | Qt::PreferDither);
+                texture.convertToFormat(QImage::Format_RGB888, Qt::ThresholdAlphaDither | Qt::PreferDither);
         }
+        bool result;
         // output files
         QString fileName = ui->outDir->text() + QDir::separator() + ui->outFile->text();
         if (ui->outputFormat->currentText().toLower() == QString("xml"))
-            outputXML(fontLst, texture, fileName);
+            result = outputXML(fontLst, texture, fileName);
         else
-            outputFNT(fontLst, texture, fileName);
+            result = outputFNT(fontLst, texture, fileName);
         // notify user
-        QMessageBox::information(0, "Done", "Your font successfully saved in " + ui->outDir->text());
+        if(result)
+            QMessageBox::information(0, "Done", "Your font successfully saved in " + ui->outDir->text());
         exporting = false; // reset flag
     }
     else
@@ -288,18 +292,22 @@ void FontRender::run()
     }
 }
 
-void FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
+bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
 {
     QTextCodec *pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
     // create output file names
     QString fntFileName = fileName + ".fnt";
-    QString imageFileName = fileName + "." + ui->outFormat->currentText().toLower();
+    QString imageExtension = ui->outFormat->currentText().toLower();
+    QString imageFileName = fileName + "." + imageExtension;
     // attempt to make output font file
     QFile fntFile(fntFileName);
     if (!fntFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
         QMessageBox::critical(0, "Error", "Cannot create file " + fntFileName);
+        return false;
+    }
     QTextStream fontStream(&fntFile);
-    fontStream << "textures: " << imageFileName << "\n";
+    fontStream << "textures: " << ui->outFile->text() + "." + imageExtension << "\n";
     // output fnt file
     QList<FontRec>::const_iterator itr;
     for (itr = fontLst.begin(); itr != fontLst.end(); ++itr)
@@ -336,10 +344,15 @@ void FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture,
         }
     }
     /* output font texture */
-    texture.save(imageFileName, qPrintable(ui->outFormat->currentText()));
+    if(!texture.save(imageFileName, qPrintable(ui->outFormat->currentText())))
+    {
+        QMessageBox::critical(0, "Error", "Cannot save image " + imageFileName);
+        return false;
+    }
+    return true;
 }
 
-void FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
+bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
 {
     QTextCodec *pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
     // create output file names
@@ -347,7 +360,10 @@ void FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
     // attempt to make output font file
     QFile fntFile(fntFileName);
     if (!fntFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
         QMessageBox::critical(0, "Error", "Cannot create file " + fntFileName);
+        return false;
+    }
     QTextStream fntStrm(&fntFile);
     // output fnt file
     fntStrm << "<?xml version=\"1.0\"?>\n";
@@ -399,4 +415,5 @@ void FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
     fntStrm << imgBase64 << "\n";
     fntStrm << "\t</texture>\n";
     fntStrm << "</fontList>\n";
+    return true;
 }
