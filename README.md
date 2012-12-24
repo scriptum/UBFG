@@ -7,6 +7,8 @@ If you know Russian - welcome: http://www.gamedev.ru/projects/forum/?id=152527
 
 Watch me if you want to see changes:)
 
+_NEW_ UBFG can produce Distance Fields!
+
 UBFG can export font into XML format (image in base64 format also stored in XML) or into it's own .fnt format, - ready to use with Cheetah 2D engine. XML format is self-described, .fnt format uses following spec.
 
 UBFG generates two files: font.png and font.fnt. 
