@@ -19,7 +19,7 @@ class ImagePacker : public QObject
 public:
     ImagePacker();
     bool compareImages(QImage* img1, QImage* img2, int* i, int *j);
-    QList<QPoint> pack(QList<packedImage> *images, int packMethod, int heuristic, uint w = 128, uint h = 128);
+    QList<QPoint> pack(QList<packedImage> *images, int heuristic, uint w = 128, uint h = 128);
     void crop(QList<packedImage*> *images);
     void sort(QList<packedImage*> *images);
     int compare;

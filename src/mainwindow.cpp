@@ -82,27 +82,25 @@ void MainWindow::exportFont()
 }
 void MainWindow::bruteForce()
 {
-    int i, j, k;
+    int j, k;
     ui->bruteForce->setText("Please, wait...");
-    for(i = 0; i < ui->comboMethod->count(); i++)
+
+    for(j = 0; j < ui->comboHeuristic->count(); j++)
     {
-        for(j = 0; j < ui->comboHeuristic->count(); j++)
+        for(k = 0; k < ui->sortOrder->count(); k++)
         {
-            for(k = 0; k < ui->sortOrder->count(); k++)
+            ui->sortOrder->setCurrentIndex(k);
+            ui->comboHeuristic->setCurrentIndex(j);
+            thread->run();
+            //~ thread->wait();
+            if(thread->done)
             {
-                ui->comboMethod->setCurrentIndex(i);
-                ui->sortOrder->setCurrentIndex(k);
-                ui->comboHeuristic->setCurrentIndex(j);
-                thread->run();
-                //~ thread->wait();
-                if(thread->done)
-                {
-                    ui->bruteForce->setText("BRUTE-FORCE");
-                    return;
-                }
+                ui->bruteForce->setText("BRUTE-FORCE");
+                return;
             }
         }
     }
+
     ui->bruteForce->setText("BRUTE-FORCE");
 }
 
@@ -155,7 +153,7 @@ void MainWindow::loadProject()
         ui->mergeBF->setChecked(settings.value("mergeBF", true).toBool());
         ui->textureW->setValue(settings.value("textureW", 512).toInt());
         ui->textureH->setValue(settings.value("textureH", 512).toInt());
-        ui->comboMethod->setCurrentIndex(settings.value("method", 1).toInt());
+        ui->distanceField->setChecked(settings.value("distanceField", false).toBool());
         ui->comboHeuristic->setCurrentIndex(settings.value("heuristic", 1).toInt());
         ui->sortOrder->setCurrentIndex(settings.value("sortOrder", 2).toInt());
         ui->outFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
@@ -197,7 +195,7 @@ void MainWindow::saveProject()
         settings.setValue("mergeBF", ui->mergeBF->isChecked());
         settings.setValue("textureW", ui->textureW->value());
         settings.setValue("textureH", ui->textureH->value());
-        settings.setValue("method", ui->comboMethod->currentIndex());
+        settings.setValue("distanceField", ui->distanceField->isChecked());
         settings.setValue("heuristic", ui->comboHeuristic->currentIndex());
         settings.setValue("sortOrder", ui->sortOrder->currentIndex());
         settings.setValue("outFormat", ui->outFormat->currentIndex());

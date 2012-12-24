@@ -28,7 +28,7 @@ void Guillotine::heuristic(QImage * img, int lvl)
 {
     if(leaf)
     {
-        int m;
+        int m = 0;
         switch (head->heuristicMethod)
         {
             case ImagePacker::NONE:
@@ -106,7 +106,6 @@ Guillotine* Guillotine::insertNode(QImage * img)
             image = img;
             return this;
         }
-        //здесь можно добавить эвристический анализ: в какой блок лучше всего запихнуть нашу картинку
         head->heurBestFit = NULL;
         head->heurMin = 99999999;
         head->heurMax = 0;

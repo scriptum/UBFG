@@ -15,23 +15,23 @@ void ImagePacker::crop(QList<packedImage*> *images)
         //top trimming
         for(y = 0; y < images->at(i)->img.height(); y++)
         {
-                for(j = 0; j < images->at(i)->img.width(); j++)
-                        if(images->at(i)->img.pixel(j,y) != pix) {t = false; break;}
-                if(!t) break;
+            for(j = 0; j < images->at(i)->img.width(); j++)
+                if(images->at(i)->img.pixel(j,y) != pix) {t = false; break;}
+            if(!t) break;
         }
         t = true;
         //left
         for(x = 0; x < images->at(i)->img.width(); x++){
-                for(j = y; j < images->at(i)->img.height(); j++)
-                        if(images->at(i)->img.pixel(x,j) != pix) {t = false; break;}
-                if(!t) break;
+            for(j = y; j < images->at(i)->img.height(); j++)
+                if(images->at(i)->img.pixel(x,j) != pix) {t = false; break;}
+            if(!t) break;
         }
         t = true;
         //right
         for(w = images->at(i)->img.width(); w > 0; w--){
-                for(j = y; j < images->at(i)->img.height(); j++)
-                        if(images->at(i)->img.pixel(w-1,j) != pix) {t = false; break;}
-                if(!t) break;
+            for(j = y; j < images->at(i)->img.height(); j++)
+                if(images->at(i)->img.pixel(w-1,j) != pix) {t = false; break;}
+            if(!t) break;
         }
         t = true;
         //if(w == 0) h = 0;
