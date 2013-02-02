@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>843</width>
-    <height>761</height>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>32</number>
+             <number>80</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -173,9 +173,9 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_20">
+         <layout class="QHBoxLayout" name="fontColorLayout">
           <item>
-           <widget class="QLabel" name="label_16">
+           <widget class="QLabel" name="fontColorLabel">
             <property name="text">
              <string>Font Color</string>
             </property>
@@ -983,7 +983,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="updateButton">
             <property name="text">
              <string>Update</string>
             </property>
@@ -1063,9 +1063,9 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <layout class="QHBoxLayout" name="bitDepthLayout">
           <item>
-           <widget class="QLabel" name="label_15">
+           <widget class="QLabel" name="bitDepthLabel">
             <property name="text">
              <string>Image Bit Depth</string>
             </property>
@@ -1099,6 +1099,16 @@
          <widget class="QCheckBox" name="transparent">
           <property name="text">
            <string>Transparent</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="exportKerning">
+          <property name="text">
+           <string>Export kerning pairs</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -1291,7 +1301,7 @@
            <x>0</x>
            <y>0</y>
            <width>563</width>
-           <height>704</height>
+           <height>601</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">

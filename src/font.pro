@@ -19,4 +19,3 @@ HEADERS += mainwindow.h \
     guillotine.h \
     maxrects.h
 FORMS += mainwindow.ui
-INCLUDEPATH += /usr/include/freetype2

@@ -8,9 +8,10 @@
 //#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imagepacker.h"
+
 class FontRender : public QObject
 {
-     Q_OBJECT
+    Q_OBJECT
 public:
     FontRender(Ui_MainWindow *ui = 0);
     ~FontRender();
@@ -19,8 +20,16 @@ public:
     bool bruteForce;
 
 signals:
-        void renderedImage(const QImage &image);
+    void renderedImage(const QImage &image);
 private:
+    QTextCodec *pCodec;
+
+    struct kerningPair {
+        QChar first;
+        QChar second;
+        int kerning;
+    };
+
     struct FontRec {
         enum Metric {
             POINTS,
@@ -29,7 +38,7 @@ private:
         enum {
             SMOOTH = 0x1,
             BOLD = 0x2,
-            ITALIC = 0x4,
+            ITALIC = 0x4
         };
         FontRec(const QString& name, int size, Metric metric, int style)
             : m_font(name), m_size(size), m_metric(metric), m_style(style)
@@ -55,9 +64,12 @@ private:
         Metric  m_metric;
         int     m_style;
         QList<const packedImage*> m_glyphLst;
+        QList<kerningPair> m_kerningList;
     };
+
     bool outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
     bool outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
+    unsigned int qchar2ui(QChar ch);
     QImage texture;
     QList<QImage> glyphs;
     QObject p;

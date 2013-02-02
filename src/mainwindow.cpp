@@ -11,9 +11,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->fontColor->hide();
+    ui->fontColorLabel->hide();
+    ui->backgroundColor->hide();
+    delete ui->fontColorLayout;
+    ui->bitDepthLabel->hide();
+    ui->bitDepth->hide();
+    delete ui->bitDepthLayout;
     thread = new FontRender(ui);
     thread->exporting = false;
-    connect(ui->pushButton_2, SIGNAL(clicked()), thread, SLOT(run()));
+    connect(ui->updateButton, SIGNAL(clicked()), thread, SLOT(run()));
     qRegisterMetaType<QImage>("QImage");
     connect(thread, SIGNAL(renderedImage(QImage)), ui->widget, SLOT(updatePixmap(QImage)));
     //ui->pushButton_2->click();
@@ -82,25 +89,9 @@ void MainWindow::exportFont()
 }
 void MainWindow::bruteForce()
 {
-    int j, k;
     ui->bruteForce->setText("Please, wait...");
 
-    for(j = 0; j < ui->comboHeuristic->count(); j++)
-    {
-        for(k = 0; k < ui->sortOrder->count(); k++)
-        {
-            ui->sortOrder->setCurrentIndex(k);
-            ui->comboHeuristic->setCurrentIndex(j);
-            thread->run();
-            //~ thread->wait();
-            if(thread->done)
-            {
-                ui->bruteForce->setText("BRUTE-FORCE");
-                return;
-            }
-        }
-    }
-
+    thread->run();
     ui->bruteForce->setText("BRUTE-FORCE");
 }
 

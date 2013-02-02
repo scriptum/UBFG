@@ -9,13 +9,12 @@
 #include <QBuffer>
 #include <stdio.h>
 #include <math.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
 FontRender::FontRender(Ui_MainWindow *_ui) : ui(_ui)
-{ }
+{}
 
 FontRender::~FontRender()
-{ }
+{}
 
 #define WIDTH  1024
 #define HEIGHT 1024
@@ -153,7 +152,7 @@ void FontRender::run()
     int i, k, base;
     uint width, height;
     QImage::Format baseTxtrFormat = QImage::Format_ARGB32;
-    QString s = ui->plainTextEdit->toPlainText();
+    QString charList = ui->plainTextEdit->toPlainText();
     packer.sortOrder = ui->sortOrder->currentIndex();
     packer.borderTop = ui->borderTop->value();
     packer.borderLeft = ui->borderLeft->value();
@@ -176,9 +175,11 @@ void FontRender::run()
     {
         // extract font paramaters
         QStringList fontName = ui->listOfFonts->item(k)->text().split(QString(", "), QString::SkipEmptyParts);
-        if(fontName.size() != 2) continue;
+        if(fontName.size() != 2)
+            continue;
         QStringList fontOptList = fontName.at(1).split(' ', QString::SkipEmptyParts);
-        if(fontOptList.size() < 2) continue;
+        if(fontOptList.size() < 2)
+            continue;
         // make font record and qfont
         FontRec fontRec(fontName.at(0), fontOptList.at(0).toInt(), FontRec::GetMetric(fontOptList.at(1)), FontRec::GetStyle(fontOptList.mid(2)));
         QFont   font(fontRec.m_font);
@@ -197,11 +198,28 @@ void FontRender::run()
             font.setItalic(true);
         //rendering glyphs
         QFontMetrics fm(font);
-        for (i = 0; i < s.size(); i++)
+        for (i = 0; i < charList.size(); i++)
         {
             packedImage packed_image;
-            if(s.indexOf(s.at(i), i + 1) > 0) continue;
-            width = fm.size(Qt::TextSingleLine, s.at(i)).width();
+            if(charList.indexOf(charList.at(i), i + 1) > 0)
+                continue;
+            width = fm.width(charList.at(i));
+            if(exporting && ui->exportKerning->isChecked())
+            {
+                for (int j = 0; j < charList.size(); ++j)
+                {
+                    int widthAll = width + fm.width(charList.at(j));
+                    QString kernPair(QString(charList.at(i)) + charList.at(j));
+                    int kerning = fm.width(kernPair) - widthAll;
+                    if(kerning != 0)
+                    {
+                        kerningPair kp = {charList.at(i),
+                                          charList.at(j),
+                                          kerning};
+                        fontRec.m_kerningList << kp;
+                    }
+                }
+            }
             height = fm.height();
             base = fm.ascent();
             QImage buffer;
@@ -216,7 +234,7 @@ void FontRender::run()
                 packed_image.img.fill(Qt::transparent);
             }
 
-            packed_image.ch = s.at(i);
+            packed_image.ch = charList.at(i);
             QPainter painter(distanceField ? &buffer : &packed_image.img);
             painter.setFont(font);
             if(exporting)
@@ -225,7 +243,7 @@ void FontRender::run()
                 painter.fillRect(0, 0, width, height,
                                  ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
             painter.setPen(fontColor);
-            painter.drawText(0,base,s.at(i));
+            painter.drawText(0,base,charList.at(i));
             if(distanceField)
             {
                 dfcalculate(&buffer, distanceFieldScale, exporting);
@@ -247,6 +265,7 @@ void FontRender::run()
     QPainter p(&texture);
     if(exporting)
     {
+        pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
         // draw glyphs
         if(!ui->transparent->isChecked() || ui->transparent->isEnabled())
             p.fillRect(0,0,texture.width(),texture.height(), bkgColor);
@@ -292,9 +311,17 @@ void FontRender::run()
     }
 }
 
+unsigned int FontRender::qchar2ui(QChar ch)
+{
+    QByteArray encodedString = pCodec->fromUnicode((QString)ch);
+    unsigned int chr = (unsigned char)encodedString.data()[0];
+    for(int j = 1; j < encodedString.size(); j++)
+        chr = (chr << 8) +(unsigned char)encodedString.data()[j];
+    return chr;
+}
+
 bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
 {
-    QTextCodec *pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
     // create output file names
     QString fntFileName = fileName + ".fnt";
     QString imageExtension = ui->outFormat->currentText().toLower();
@@ -309,30 +336,25 @@ bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture,
     QTextStream fontStream(&fntFile);
     fontStream << "textures: " << ui->outFile->text() + "." + imageExtension << "\n";
     // output fnt file
-    QList<FontRec>::const_iterator itr;
-    for (itr = fontLst.begin(); itr != fontLst.end(); ++itr)
+    QList<FontRec>::const_iterator fontRecIt;
+    for (fontRecIt = fontLst.begin(); fontRecIt != fontLst.end(); ++fontRecIt)
     {
         // output font record
-        fontStream << itr->m_font << " "
-                   << itr->m_size << FontRec::GetMetricStr(itr->m_metric);
-        if (itr->m_style & FontRec::BOLD)
+        fontStream << fontRecIt->m_font << " "
+                   << fontRecIt->m_size << FontRec::GetMetricStr(fontRecIt->m_metric);
+        if (fontRecIt->m_style & FontRec::BOLD)
             fontStream << " bold";
-        if (itr->m_style & FontRec::ITALIC)
+        if (fontRecIt->m_style & FontRec::ITALIC)
             fontStream << " italic";
         fontStream << "\n";
         // output each glyph record
         QList<const packedImage*>::const_iterator chrItr;
-        for (chrItr = itr->m_glyphLst.begin(); chrItr != itr->m_glyphLst.end(); ++chrItr)
+        for (chrItr = fontRecIt->m_glyphLst.begin(); chrItr != fontRecIt->m_glyphLst.end(); ++chrItr)
         {
             const packedImage* pGlyph = *chrItr;
-            // calc character value
-            QByteArray encodedString = pCodec->fromUnicode((QString)pGlyph->ch);
-            unsigned int chr = (unsigned char)encodedString.data()[0];
-            for(int j = 1; j < encodedString.size(); j++)
-                chr = (chr << 8) +(unsigned char)encodedString.data()[j];
             // output glyph metrics
             fontStream <<
-                          chr << "\t" <<
+                          qchar2ui(pGlyph->ch) << "\t" <<
                           pGlyph->rc.x() << "\t" <<
                           pGlyph->rc.y() << "\t" <<
                           pGlyph->crop.width() << "\t" <<
@@ -340,7 +362,17 @@ bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture,
                           pGlyph->crop.x() << "\t" <<
                           pGlyph->crop.y() << "\t" <<
                           pGlyph->rc.width() << "\t" <<
-                          pGlyph->rc.height() << "\t" << "\n";
+                          pGlyph->rc.height() << "\n";
+        }
+        const QList<kerningPair> *kerningList = &fontRecIt->m_kerningList;
+        if(kerningList->length() > 0)
+        {
+            fontStream << "kerning pairs:\n";
+            for (int i = 0; i < kerningList->length(); ++i) {
+                fontStream << qchar2ui(kerningList->at(i).first) << '\t' <<
+                              qchar2ui(kerningList->at(i).second) << '\t' <<
+                              kerningList->at(i).kerning << '\n';
+            }
         }
     }
     /* output font texture */
@@ -354,7 +386,6 @@ bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture,
 
 bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
 {
-    QTextCodec *pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
     // create output file names
     QString fntFileName = fileName + ".xml";
     // attempt to make output font file
@@ -364,35 +395,30 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
         QMessageBox::critical(0, "Error", "Cannot create file " + fntFileName);
         return false;
     }
-    QTextStream fntStrm(&fntFile);
+    QTextStream fontStream(&fntFile);
     // output fnt file
-    fntStrm << "<?xml version=\"1.0\"?>\n";
-    fntStrm << "<fontList>\n";
-    QList<FontRec>::const_iterator itr;
-    for (itr = fontLst.begin(); itr != fontLst.end(); ++itr)
+    fontStream << "<?xml version=\"1.0\"?>\n";
+    fontStream << "<fontList>\n";
+    QList<FontRec>::const_iterator fontRecIt;
+    for (fontRecIt = fontLst.begin(); fontRecIt != fontLst.end(); ++fontRecIt)
     {
         // output font record
-        fntStrm <<
-                   "\t<font name=\"" << itr->m_font << "\" " <<
-                   "size=\"" << itr->m_size << FontRec::GetMetricStr(itr->m_metric) << "\" ";
-        if (itr->m_style & FontRec::BOLD)
-            fntStrm << "bold=\"true\" ";
-        if (itr->m_style & FontRec::ITALIC)
-            fntStrm << "italic=\"true\"";
-        fntStrm << ">\n";
+        fontStream <<
+                   "\t<font name=\"" << fontRecIt->m_font << "\" " <<
+                   "size=\"" << fontRecIt->m_size << FontRec::GetMetricStr(fontRecIt->m_metric) << "\" ";
+        if (fontRecIt->m_style & FontRec::BOLD)
+            fontStream << "bold=\"true\" ";
+        if (fontRecIt->m_style & FontRec::ITALIC)
+            fontStream << "italic=\"true\"";
+        fontStream << ">\n";
         // output each glyph record
         QList<const packedImage*>::const_iterator chrItr;
-        for (chrItr = itr->m_glyphLst.begin(); chrItr != itr->m_glyphLst.end(); ++chrItr)
+        for (chrItr = fontRecIt->m_glyphLst.begin(); chrItr != fontRecIt->m_glyphLst.end(); ++chrItr)
         {
             const packedImage* pGlyph = *chrItr;
-            // calc character value
-            QByteArray encodedString = pCodec->fromUnicode((QString)pGlyph->ch);
-            unsigned int chr = (unsigned char)encodedString.data()[0];
-            for(int j = 1; j < encodedString.size(); j++)
-                chr = (chr << 8) +(unsigned char)encodedString.data()[j];
             // output glyph metrics
-            fntStrm << "\t\t<char " <<
-                       "id=\"" << chr << "\" " <<
+            fontStream << "\t\t<char " <<
+                       "id=\"" << qchar2ui(pGlyph->ch) << "\" " <<
                        "x=\"" << pGlyph->rc.x() << "\" " <<
                        "y=\"" << pGlyph->rc.y() << "\" " <<
                        "width=\"" << pGlyph->rc.width() << "\" " <<
@@ -403,7 +429,14 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
                        "OrigHeight=\"" << pGlyph->rc.height() << "\" " <<
                        "/>\n";
         }
-        fntStrm << "\t</font>\n";
+        const QList<kerningPair> *kerningList = &fontRecIt->m_kerningList;
+        for (int i = 0; i < kerningList->length(); ++i) {
+            fontStream << "\t\t<kerning " <<
+                          "first=\"" << qchar2ui(kerningList->at(i).first) << "\" " <<
+                          "second=\"" << qchar2ui(kerningList->at(i).second) << "\" " <<
+                          "value=\"" << kerningList->at(i).kerning << "\" />\n";
+        }
+        fontStream << "\t</font>\n";
     }
     /* output font texture */
     QByteArray imgArray;
@@ -411,9 +444,9 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
     imgBuffer.open(QIODevice::WriteOnly);
     texture.save(&imgBuffer, qPrintable(ui->outFormat->currentText()));
     QString imgBase64(imgArray.toBase64());
-    fntStrm << "\t<texture width=\"" << texture.width() << "\" height=\"" << texture.height() << "\" >\n";
-    fntStrm << imgBase64 << "\n";
-    fntStrm << "\t</texture>\n";
-    fntStrm << "</fontList>\n";
+    fontStream << "\t<texture width=\"" << texture.width() << "\" height=\"" << texture.height() << "\" >\n";
+    fontStream << imgBase64 << "\n";
+    fontStream << "\t</texture>\n";
+    fontStream << "</fontList>\n";
     return true;
 }

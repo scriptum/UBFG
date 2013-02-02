@@ -17,14 +17,14 @@ void ImagePacker::sort(QList<packedImage*> *images)
 {
     switch(sortOrder)
     {
-    case 1:
-        qSort(images->begin(), images->end(), ImageCompareByWidth);
-        break;
-    case 2:
-        qSort(images->begin(), images->end(), ImageCompareByHeight);
-        break;
-    case 3:
-        qSort(images->begin(), images->end(), ImageCompareByArea);
-        break;
+        case 1:
+            qSort(images->begin(), images->end(), ImageCompareByWidth);
+            break;
+        case 2:
+            qSort(images->begin(), images->end(), ImageCompareByHeight);
+            break;
+        case 3:
+            qSort(images->begin(), images->end(), ImageCompareByArea);
+            break;
     }
 }
