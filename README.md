@@ -23,6 +23,9 @@ This information looks like:
 	32    0       0       0       0        3        14       3        14
 	97    90      36      5       7        1        4        7        14
 	98    0       41      5       9        1        2        7        14
+	kerning pairs:
+	32 97 -1
+	32 98 -0.5
 
 
 Here:
@@ -36,6 +39,10 @@ Here:
 * Yoffset - distance on the y-axis, on which glyph must be shifted
 * Orig W - original width of glyph
 * Orig H - original height of glyph
+
+Also fnt format may have _kerning pairs:_ a set of kerning pairs listed after phrase "kerning pairs:". 
+First number if a first character in pair, second number - second character in pair, third number - 
+kerning value. Note: this value may be with floating point if you use distance fields.
 
 ![Help image](https://github.com/scriptum/UBFG/raw/master/readme.png)
 
