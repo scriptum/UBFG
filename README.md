@@ -22,7 +22,7 @@ This information looks like:
 	Char  X pos   Y pos   Width   Height   Xoffset  Yoffset  Orig W   Orig H
 	32    0       0       0       0        3        14       3        14
 	97    90      36      5       7        1        4        7        14
-	98    0       41      5       9        1        2        7        14\
+	98    0       41      5       9        1        2        7        14
 	kerning pairs:
 	32 97 -1
 	32 98 -0.5
