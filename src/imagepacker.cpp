@@ -70,9 +70,7 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int heur, uint w, uint h
             out << pt;
             images.operator [](i)->rc = QRect(pt.x(), pt.y(), images.at(i)->rc.width(), images.at(i)->rc.height());
         }
-//        qDebug("!!!!!! %d", missingChars);
 //        if(missingChars == 0) break;
-        //sortOrder = 4; //random sort
     }
     return out;
 }

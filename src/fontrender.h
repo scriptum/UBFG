@@ -27,7 +27,7 @@ private:
     struct kerningPair {
         QChar first;
         QChar second;
-        int kerning;
+        float kerning;
     };
 
     struct FontRec {

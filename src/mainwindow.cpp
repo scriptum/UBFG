@@ -23,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->updateButton, SIGNAL(clicked()), thread, SLOT(run()));
     qRegisterMetaType<QImage>("QImage");
     connect(thread, SIGNAL(renderedImage(QImage)), ui->widget, SLOT(updatePixmap(QImage)));
-    //ui->pushButton_2->click();
     QList<QByteArray> avaiableCodecs = QTextCodec::availableCodecs ();
     int i;
     for(i = 0; i < avaiableCodecs.count(); i++)
@@ -161,6 +160,7 @@ void MainWindow::loadProject()
             item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsDragEnabled|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
         }
         settings.endArray();
+        thread->run();
     }
 }
 

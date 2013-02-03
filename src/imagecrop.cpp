@@ -5,11 +5,9 @@ void ImagePacker::crop(QList<packedImage*> *images)
 {
     int i, j, w, h, x, y;
     QRgb pix;
-    //QImage im;
     bool t;
     if(trim) for(i = 0; i < images->size(); i++)
     {
-        //im = &images->operator [](i)->img;
         pix = images->at(i)->img.pixel(0,0);
         t = true;
         //top trimming
@@ -34,7 +32,6 @@ void ImagePacker::crop(QList<packedImage*> *images)
             if(!t) break;
         }
         t = true;
-        //if(w == 0) h = 0;
         //else
         {
             //bottom
@@ -49,15 +46,11 @@ void ImagePacker::crop(QList<packedImage*> *images)
         if(w < 0) w = 0;
         if(h < 0) h = 0;
         QImage newImg;
-        //newImg = QImage(w+1, h+1, QImage::Format_ARGB32_Premultiplied);
         QRect pos(0, 0, images->at(i)->img.width(), images->at(i)->img.height());
         
         if(w > 0) newImg = images->at(i)->img.copy(QRect(x-borderLeft, y-borderTop, w+borderLeft+borderRight, h+borderTop+borderBottom));
-        //images->at(i)->img.~QImage();
         images->operator [](i)->img = newImg;
         images->operator [](i)->crop = QRect(x, y, w, h);
         images->operator [](i)->rc = pos;
-        //qDebug("%d %d", pos.width(), pos.height());
-        //delete &newImg;
     }
 }

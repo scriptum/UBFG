@@ -73,23 +73,16 @@ Guillotine* Guillotine::insertNode(QImage * img)
 {
     int x, y;
     head->duplicate = false;
-    if (!leaf)//we're not a leaf then
+    if (!leaf)
     {
-        //qDebug("123");
-        //(try inserting into first child)
         Guillotine* node = child[0]->insertNode(img);
             if (node) return node;
-        //(no room, insert into second)
         return child[1]->insertNode(img);
     }
     else
     {
-        //qDebug("123");
-        //(if there's already a lightmap here, return)
-        //qDebug("%d", image);
         if (image)
         {
-            //qDebug("123");
             if(head->packer->compareImages(image, img, &x, &y))
             {
                 head->duplicate = true;
@@ -97,10 +90,8 @@ Guillotine* Guillotine::insertNode(QImage * img)
             }
             return NULL;
         }
-        //(if we're too small, return)
         if (img->width() > rc.width() || img->height() > rc.height())
             return NULL;
-        //(if we're just right, accept)
         if (img->width() == rc.width() && img->height() == rc.height())
         {
             image = img;
@@ -113,11 +104,9 @@ Guillotine* Guillotine::insertNode(QImage * img)
         Guillotine * p = head->heurBestFit;
         if(!p)
             p = this;
-        //(otherwise, gotta split this Guillotine and create some kids)
         p->child[0] = new Guillotine(head);
         p->child[1] = new Guillotine(head);
         p->leaf = false;
-        //(decide which way to split)
         int dw = p->rc.width() - img->width();
         int dh = p->rc.height() - img->height();
 
@@ -131,7 +120,6 @@ Guillotine* Guillotine::insertNode(QImage * img)
             p->child[0]->rc = QRect(p->rc.x(), p->rc.y(), p->rc.width(), img->height());
             p->child[1]->rc = QRect(p->rc.x(), p->rc.y() + img->height(), p->rc.width(), dh);
         }
-        //(insert into first child we created)
         return p->child[0]->insertNode(img);
     }
 }

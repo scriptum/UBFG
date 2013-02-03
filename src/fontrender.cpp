@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QBuffer>
+#include <QDebug>
 #include <stdio.h>
 #include <math.h>
 
@@ -210,13 +211,14 @@ void FontRender::run()
                 {
                     int widthAll = width + fm.width(charList.at(j));
                     QString kernPair(QString(charList.at(i)) + charList.at(j));
-                    int kerning = fm.width(kernPair) - widthAll;
+                    float kerning = (float)(fm.width(kernPair) - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
                     {
                         kerningPair kp = {charList.at(i),
                                           charList.at(j),
                                           kerning};
                         fontRec.m_kerningList << kp;
+//                        qDebug() << kernPair << kerning;
                     }
                 }
             }
