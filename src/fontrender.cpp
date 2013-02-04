@@ -24,7 +24,7 @@ struct Point
 {
     int dx, dy;
 
-    int DistSq() const { return dx*dx + dy*dy; }
+    int DistSq() const { return dx * dx + dy * dy; }
 };
 
 struct Grid
@@ -36,7 +36,7 @@ Point pointInside = { 0, 0 };
 Point pointEmpty = { 9999, 9999 };
 Grid grid1, grid2;
 
-Point Get(Grid &g, int x, int y, int maxW, int maxH)
+static inline Point Get(Grid &g, int x, int y, int maxW, int maxH)
 {
     // OPTIMIZATION: you can skip the edge check code if you make your grid
     // have a 1-pixel gutter.
@@ -46,12 +46,12 @@ Point Get(Grid &g, int x, int y, int maxW, int maxH)
         return pointEmpty;
 }
 
-void Put( Grid &g, int x, int y, const Point &p )
+static inline void Put( Grid &g, int x, int y, const Point &p )
 {
     g.grid[y][x] = p;
 }
 
-void Compare( Grid &g, Point &p, int x, int y, int offsetx, int offsety, int maxW, int maxH )
+static inline void Compare( Grid &g, Point &p, int x, int y, int offsetx, int offsety, int maxW, int maxH )
 {
     Point other = Get( g, x+offsetx, y+offsety, maxW, maxH );
     other.dx += offsetx;
@@ -61,7 +61,7 @@ void Compare( Grid &g, Point &p, int x, int y, int offsetx, int offsety, int max
         p = other;
 }
 
-void GenerateSDF(Grid &g, int maxW, int maxH)
+static void GenerateSDF(Grid &g, int maxW, int maxH)
 {
     // Pass 0
     for (int y=0;y<maxH;y++)
@@ -106,7 +106,7 @@ void GenerateSDF(Grid &g, int maxW, int maxH)
     }
 }
 
-void dfcalculate(QImage *img, int distanceFieldScale, bool exporting)
+static void dfcalculate(QImage *img, int distanceFieldScale, bool exporting)
 {
     int x, y;
     int maxW = img->width(), maxH = img->height();
@@ -152,7 +152,7 @@ void FontRender::run()
     QList<packedImage> glyphLst;
     int i, k, base;
     uint width, height;
-    QImage::Format baseTxtrFormat = QImage::Format_ARGB32;
+    QImage::Format baseTxtrFormat;
     QString charList = ui->plainTextEdit->toPlainText();
     packer.sortOrder = ui->sortOrder->currentIndex();
     packer.borderTop = ui->borderTop->value();
@@ -166,9 +166,15 @@ void FontRender::run()
     QColor bkgColor = ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::transparent : ui->backgroundColor->palette().brush(QPalette::Button).color();
     bool distanceField;
     if(ui->distanceField->isChecked())
+    {
         distanceField = true;
+        baseTxtrFormat = QImage::Format_ARGB32;
+    }
     else
+    {
         distanceField = false;
+        baseTxtrFormat = QImage::Format_ARGB32_Premultiplied;
+    }
     int distanceFieldScale = 8;
     if(!distanceField)
         distanceFieldScale = 1;
@@ -214,9 +220,7 @@ void FontRender::run()
                     float kerning = (float)(fm.width(kernPair) - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
                     {
-                        kerningPair kp = {charList.at(i),
-                                          charList.at(j),
-                                          kerning};
+                        kerningPair kp = {charList.at(i), charList.at(j), kerning};
                         fontRec.m_kerningList << kp;
 //                        qDebug() << kernPair << kerning;
                     }
