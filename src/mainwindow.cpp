@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->bitDepthLabel->hide();
     ui->bitDepth->hide();
     delete ui->bitDepthLayout;
+    ui->bruteForce->hide();
     thread = new FontRender(ui);
     thread->exporting = false;
     connect(ui->updateButton, SIGNAL(clicked()), thread, SLOT(run()));

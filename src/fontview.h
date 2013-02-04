@@ -9,7 +9,7 @@ class FontView : public QWidget
 {
 Q_OBJECT
 public:
-    FontView(QWidget *parent = 0);
+    FontView(QWidget *parent);
 protected:
     void paintEvent(QPaintEvent *event);
 private:

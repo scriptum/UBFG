@@ -19,3 +19,5 @@ HEADERS += mainwindow.h \
     guillotine.h \
     maxrects.h
 FORMS += mainwindow.ui
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math -fomit-frame-pointer

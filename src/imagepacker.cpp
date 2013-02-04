@@ -16,9 +16,9 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int heur, uint w, uint h
 
     QList<QPoint> out;
 
-    int maxRepeats = 30;
+//    int maxRepeats = 30;
 //    if(bruteForce == false)
-        maxRepeats = 1;
+//        maxRepeats = 1;
 
     //repeat trying to find best solution
 //    for (int repeat = 0; repeat < maxRepeats; ++repeat)

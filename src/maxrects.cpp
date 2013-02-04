@@ -7,11 +7,10 @@ MaxRects::MaxRects()
 QPoint MaxRects::insertNode(QImage * img)
 {
     int i, j;
-    int min = 999999999, mini = -1, weight;
+    int min = 999999999, mini = -1, weight = 0;
     if(img->width() == 0 || img->height() == 0)
         return QPoint(0,0);
-    static int nextx = 0, nexty = 0, prevx = 0;
-    bool leftNeighbor, rightNeighbor, _leftNeighbor, _rightNeighbor;
+    bool leftNeighbor = false, rightNeighbor = false, _leftNeighbor, _rightNeighbor;
 
     for(i = 0; i < F.size(); i++)
     {
@@ -90,9 +89,6 @@ QPoint MaxRects::insertNode(QImage * img)
         n0.r = buf;
         R << buf;
         n0.i = img;
-        nextx = n0.r.x() + n0.r.width();
-        nexty = F.at(i).r.y() + img->height();
-        prevx = n0.r.x();
         if(F.at(i).r.width() > img->width())
         {
             MaxRectsNode n;
