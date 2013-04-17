@@ -5,9 +5,14 @@ Ultimate bitmap font generator - useful tool to create compact font textures for
 
 If you know Russian - welcome: http://www.gamedev.ru/projects/forum/?id=152527
 
-Watch me if you want to see changes:)
-
-_NEW_ UBFG can produce Distance Fields!
+Feature list:
+* multiple fonts may be packed into one texture
+* extremely effective packing algorithm + subcharacters merging
+* optimizied not only for English: generate Russian, Japanese, Chinese fonts
+* easy-to-create characters list from text
+* distance fields for easy OpenGL scalable fonts
+* exporting kerning pairs
+* free and open-source project
 
 UBFG can export font into XML format (image in base64 format also stored in XML) or into it's own .fnt format, - ready to use with Cheetah 2D engine. XML format is self-described, .fnt format uses following spec.
 
