@@ -427,8 +427,8 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
                        "id=\"" << qchar2ui(pGlyph->ch) << "\" " <<
                        "x=\"" << pGlyph->rc.x() << "\" " <<
                        "y=\"" << pGlyph->rc.y() << "\" " <<
-                       "width=\"" << pGlyph->rc.width() << "\" " <<
-                       "height=\"" << pGlyph->rc.height() << "\" " <<
+                       "width=\"" << pGlyph->crop.width() << "\" " <<
+                       "height=\"" << pGlyph->crop.height() << "\" " <<
                        "Xoffset=\"" << pGlyph->crop.x() << "\" " <<
                        "Yoffset=\"" << pGlyph->crop.y() << "\" " <<
                        "OrigWidth=\"" << pGlyph->rc.width() << "\" " <<
