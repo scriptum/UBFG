@@ -24,9 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->updateButton, SIGNAL(clicked()), thread, SLOT(run()));
     qRegisterMetaType<QImage>("QImage");
     connect(thread, SIGNAL(renderedImage(QImage)), ui->widget, SLOT(updatePixmap(QImage)));
+    ui->encoding->addItem("UNICODE");
     QList<QByteArray> avaiableCodecs = QTextCodec::availableCodecs ();
-    int i;
-    for(i = 0; i < avaiableCodecs.count(); i++)
+    for(int i = 0; i < avaiableCodecs.count(); i++)
     {
         ui->encoding->addItem(avaiableCodecs.at(i));
     }
@@ -133,7 +133,7 @@ void MainWindow::loadProject()
         projectDir = fi.path();
         project = fi.fileName();
         QSettings settings(file, QSettings::IniFormat, this);
-        
+
         ui->plainTextEdit->setPlainText(settings.value("charList", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+\\/():;%&`'*#$=[]@^{}_~\"><").toString());
         ui->trim->setChecked(settings.value("trim", true).toBool());
         ui->borderTop->setValue(settings.value("borderTop", 0).toInt());
@@ -176,7 +176,7 @@ void MainWindow::saveProject()
         projectDir = fi.path();
         project = fi.fileName();
         QSettings settings(file, QSettings::IniFormat, this);
-        
+
         settings.setValue("charList", ui->plainTextEdit->toPlainText());
         settings.setValue("trim", ui->trim->isChecked());
         settings.setValue("borderTop", ui->borderTop->value());
@@ -211,7 +211,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 void MainWindow::bitDepthChanged(int index) {
-    if (index == 1) 
+    if (index == 1)
         ui->transparent->setDisabled(true);
     else
         ui->transparent->setDisabled(false);

@@ -271,7 +271,11 @@ void FontRender::run()
     QPainter p(&texture);
     if(exporting)
     {
-        pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
+        // Some sort of unicode hack...
+        if(ui->encoding->currentText() == "UNICODE")
+            pCodec = NULL;
+        else
+            pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
         // draw glyphs
         if(!ui->transparent->isChecked() || ui->transparent->isEnabled())
             p.fillRect(0,0,texture.width(),texture.height(), bkgColor);
@@ -319,10 +323,13 @@ void FontRender::run()
 
 unsigned int FontRender::qchar2ui(QChar ch)
 {
+    // fast UNICODE fallback
+    if(pCodec == NULL)
+        return ch.unicode();
     QByteArray encodedString = pCodec->fromUnicode((QString)ch);
     unsigned int chr = (unsigned char)encodedString.data()[0];
     for(int j = 1; j < encodedString.size(); j++)
-        chr = (chr << 8) +(unsigned char)encodedString.data()[j];
+        chr = (chr << 8) + (unsigned char)encodedString.data()[j];
     return chr;
 }
 
