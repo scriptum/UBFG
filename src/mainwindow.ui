@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>80</number>
+             <number>81</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -1112,6 +1112,16 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="saveImageInsideXML">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include inside XML file base64-encoded version of image. If not checked, XML stores only font data and image exported into PNG/BMP file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Save image inside XML</string>
           </property>
          </widget>
         </item>
