@@ -1,7 +1,7 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-05-28T21:40:19
 # -------------------------------------------------
-TARGET = font
+TARGET = UBFG
 TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
