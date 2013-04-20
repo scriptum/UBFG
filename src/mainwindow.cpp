@@ -148,10 +148,18 @@ void MainWindow::loadProject()
         ui->comboHeuristic->setCurrentIndex(settings.value("heuristic", 1).toInt());
         ui->sortOrder->setCurrentIndex(settings.value("sortOrder", 2).toInt());
         ui->outFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
-        ui->encoding->setCurrentIndex(settings.value("encoding", 0).toInt());
+        //compatible with old format without UNICODE and with export indexes instead of text
+        int encodingInt = settings.value("encoding", 0).toInt();
+        QString encodingStr = settings.value("encoding", 0).toString();
+        if(QString::number(encodingInt) == encodingStr)
+            ui->encoding->setCurrentIndex(encodingInt + 1);
+        else
+            ui->encoding->setCurrentIndex(ui->encoding->findText(encodingStr));
         ui->transparent->setChecked(settings.value("transparent", true).toBool());
         ui->outDir->setText(settings.value("outDir", homeDir).toString());
         ui->outFile->setText(settings.value("outFile", outFile).toString());
+        ui->exportKerning->setChecked(settings.value("kerning", true).toBool());
+        ui->saveImageInsideXML->setChecked(settings.value("imageInXML", false).toBool());
         int size = settings.beginReadArray("fonts");
         ui->listOfFonts->clear();
         for (int i = 0; i < size; ++i) {
@@ -191,10 +199,12 @@ void MainWindow::saveProject()
         settings.setValue("heuristic", ui->comboHeuristic->currentIndex());
         settings.setValue("sortOrder", ui->sortOrder->currentIndex());
         settings.setValue("outFormat", ui->outFormat->currentIndex());
-        settings.setValue("encoding", ui->encoding->currentIndex());
+        settings.setValue("encoding", ui->encoding->currentText());
         settings.setValue("transparent", ui->transparent->isChecked());
         settings.setValue("outDir", ui->outDir->text());
         settings.setValue("outFile", ui->outFile->text());
+        settings.setValue("kerning", ui->exportKerning->isChecked());
+        settings.setValue("imageInXML", ui->saveImageInsideXML->isChecked());
         settings.beginWriteArray("fonts");
         for (int i = 0; i < ui->listOfFonts->count(); ++i) {
             settings.setArrayIndex(i);
