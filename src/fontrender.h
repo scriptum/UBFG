@@ -24,6 +24,10 @@ signals:
 private:
     QTextCodec *pCodec;
 
+    QString imageFileName;
+    QString imageExtension;
+    QString fileName;
+
     struct kerningPair {
         QChar first;
         QChar second;
@@ -67,8 +71,8 @@ private:
         QList<kerningPair> m_kerningList;
     };
 
-    bool outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
-    bool outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName);
+    bool outputFNT(const QList<FontRec>& fontLst, const QImage& texture);
+    bool outputXML(const QList<FontRec>& fontLst, const QImage& texture);
     unsigned int qchar2ui(QChar ch);
     QImage texture;
     QList<QImage> glyphs;

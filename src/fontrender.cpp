@@ -287,10 +287,13 @@ void FontRender::run()
             if(glyphLst.at(i).merged == false)
                     p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
 
-        if (ui->transparent->isEnabled() && ui->transparent->isChecked()) {
+        if (ui->transparent->isEnabled() && ui->transparent->isChecked())
+        {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
                 texture.convertToFormat(QImage::Format_Indexed8, Qt::DiffuseAlphaDither | Qt::PreferDither);
-        } else {
+        }
+        else
+        {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit
                 texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither |Qt::PreferDither);
             else  // 24 bit image
@@ -298,11 +301,13 @@ void FontRender::run()
         }
         bool result;
         // output files
-        QString fileName = ui->outDir->text() + QDir::separator() + ui->outFile->text();
+        fileName = ui->outDir->text() + QDir::separator() + ui->outFile->text();
+        imageExtension = ui->outFormat->currentText().toLower();
+        imageFileName = fileName + "." + imageExtension;
         if (ui->outputFormat->currentText().toLower() == QString("xml"))
-            result = outputXML(fontLst, texture, fileName);
+            result = outputXML(fontLst, texture);
         else
-            result = outputFNT(fontLst, texture, fileName);
+            result = outputFNT(fontLst, texture);
         // notify user
         if(result)
             QMessageBox::information(0, "Done", "Your font successfully saved in " + ui->outDir->text());
@@ -337,12 +342,10 @@ unsigned int FontRender::qchar2ui(QChar ch)
     return chr;
 }
 
-bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
+bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture)
 {
     // create output file names
     QString fntFileName = fileName + ".fnt";
-    QString imageExtension = ui->outFormat->currentText().toLower();
-    QString imageFileName = fileName + "." + imageExtension;
     // attempt to make output font file
     QFile fntFile(fntFileName);
     if (!fntFile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -401,15 +404,15 @@ bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture,
     return true;
 }
 
-bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture, QString& fileName)
+bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture)
 {
     // create output file names
-    QString fntFileName = fileName + ".xml";
+    QString xmlFileName = fileName + ".xml";
     // attempt to make output font file
-    QFile fntFile(fntFileName);
+    QFile fntFile(xmlFileName);
     if (!fntFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        QMessageBox::critical(0, "Error", "Cannot create file " + fntFileName);
+        QMessageBox::critical(0, "Error", "Cannot create file " + xmlFileName);
         return false;
     }
     QTextStream fontStream(&fntFile);
@@ -455,15 +458,24 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture,
         }
         fontStream << "\t</font>\n";
     }
-    /* output font texture */
-    QByteArray imgArray;
-    QBuffer imgBuffer(&imgArray);
-    imgBuffer.open(QIODevice::WriteOnly);
-    texture.save(&imgBuffer, qPrintable(ui->outFormat->currentText()));
-    QString imgBase64(imgArray.toBase64());
-    fontStream << "\t<texture width=\"" << texture.width() << "\" height=\"" << texture.height() << "\" >\n";
-    fontStream << imgBase64 << "\n";
-    fontStream << "\t</texture>\n";
+    if(ui->saveImageInsideXML->isChecked()){
+        QByteArray imgArray;
+        QBuffer imgBuffer(&imgArray);
+        imgBuffer.open(QIODevice::WriteOnly);
+        texture.save(&imgBuffer, qPrintable(ui->outFormat->currentText()));
+        QString imgBase64(imgArray.toBase64());
+        fontStream << "\t<texture width=\"" << texture.width() << "\" height=\"" << texture.height() << "\" format=\"" << imageExtension << "\">\n";
+        fontStream << imgBase64 << "\n";
+        fontStream << "\t</texture>\n";
+    }
+    else
+    {
+        if(!texture.save(imageFileName, qPrintable(ui->outFormat->currentText())))
+        {
+            QMessageBox::critical(0, "Error", "Cannot save image " + imageFileName);
+            return false;
+        }
+    }
     fontStream << "</fontList>\n";
     return true;
 }
