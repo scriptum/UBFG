@@ -204,20 +204,22 @@ void FontRender::run()
         if (fontRec.m_style & FontRec::ITALIC)
             font.setItalic(true);
         //rendering glyphs
-        QFontMetrics fm(font);
+        QFontMetrics fontMetrics(font);
         for (i = 0; i < charList.size(); i++)
         {
             packedImage packed_image;
             if(charList.indexOf(charList.at(i), i + 1) > 0)
                 continue;
-            width = fm.width(charList.at(i));
+
+            QSize charSize = fontMetrics.size(0, charList.at(i));
+            width = charSize.width();
             if(exporting && ui->exportKerning->isChecked())
             {
                 for (int j = 0; j < charList.size(); ++j)
                 {
-                    int widthAll = width + fm.width(charList.at(j));
+                    int widthAll = width + fontMetrics.size(0, charList.at(j)).width();
                     QString kernPair(QString(charList.at(i)) + charList.at(j));
-                    float kerning = (float)(fm.width(kernPair) - widthAll) / (float)distanceFieldScale;
+                    float kerning = (float)(fontMetrics.size(0, kernPair).width() - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
                     {
                         kerningPair kp = {charList.at(i), charList.at(j), kerning};
@@ -226,8 +228,10 @@ void FontRender::run()
                     }
                 }
             }
-            height = fm.height();
-            base = fm.ascent();
+
+
+            height = charSize.height();
+            base = fontMetrics.ascent();
             QImage buffer;
             if(distanceField)
             {
