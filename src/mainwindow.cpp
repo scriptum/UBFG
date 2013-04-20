@@ -147,7 +147,7 @@ void MainWindow::loadProject()
         ui->distanceField->setChecked(settings.value("distanceField", false).toBool());
         ui->comboHeuristic->setCurrentIndex(settings.value("heuristic", 1).toInt());
         ui->sortOrder->setCurrentIndex(settings.value("sortOrder", 2).toInt());
-        ui->outFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
+        ui->outputFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
         //compatible with old format without UNICODE and with export indexes instead of text
         int encodingInt = settings.value("encoding", 0).toInt();
         QString encodingStr = settings.value("encoding", 0).toString();
@@ -198,7 +198,7 @@ void MainWindow::saveProject()
         settings.setValue("distanceField", ui->distanceField->isChecked());
         settings.setValue("heuristic", ui->comboHeuristic->currentIndex());
         settings.setValue("sortOrder", ui->sortOrder->currentIndex());
-        settings.setValue("outFormat", ui->outFormat->currentIndex());
+        settings.setValue("outFormat", ui->outputFormat->currentIndex());
         settings.setValue("encoding", ui->encoding->currentText());
         settings.setValue("transparent", ui->transparent->isChecked());
         settings.setValue("outDir", ui->outDir->text());
