@@ -205,33 +205,41 @@ void FontRender::run()
             font.setItalic(true);
         //rendering glyphs
         QFontMetrics fontMetrics(font);
+        base = fontMetrics.ascent();
         for (i = 0; i < charList.size(); i++)
         {
             packedImage packed_image;
             if(charList.indexOf(charList.at(i), i + 1) > 0)
                 continue;
-
-            QSize charSize = fontMetrics.size(0, charList.at(i));
-            width = charSize.width();
+            QChar charFirst = charList.at(i);
+            QSize charSize = fontMetrics.size(0, charFirst);
+            packed_image.charWidth = fontMetrics.width(charFirst);
+            int firstBearing = fontMetrics.leftBearing(charFirst);
+            firstBearing = firstBearing > 0 ? 0 : firstBearing;
+            packed_image.bearing = firstBearing;
+//            qDebug() << fontMetrics.leftBearing(charFirst) << charFirst;
+            width = charSize.width() - firstBearing;
             if(exporting && ui->exportKerning->isChecked())
             {
                 for (int j = 0; j < charList.size(); ++j)
                 {
-                    int widthAll = width + fontMetrics.size(0, charList.at(j)).width();
-                    QString kernPair(QString(charList.at(i)) + charList.at(j));
-                    float kerning = (float)(fontMetrics.size(0, kernPair).width() - widthAll) / (float)distanceFieldScale;
+                    QChar charSecond = charList.at(j);
+                    int secondBearing = fontMetrics.leftBearing(charSecond);
+                    secondBearing = secondBearing > 0 ? 0 : secondBearing;
+//                    int widthAll = charSize.width() + fontMetrics.size(0, charSecond).width() - secondBearing;
+                    int widthAll = fontMetrics.width(charFirst) + fontMetrics.width(charSecond);
+                    QString kernPair(QString(charFirst) + charSecond);
+//                    float kerning = (float)(fontMetrics.size(0, kernPair).width() - widthAll) / (float)distanceFieldScale;
+                    float kerning = (float)(fontMetrics.width(kernPair) - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
                     {
-                        kerningPair kp = {charList.at(i), charList.at(j), kerning};
+                        kerningPair kp = {charFirst, charSecond, kerning};
                         fontRec.m_kerningList << kp;
-//                        qDebug() << kernPair << kerning;
                     }
                 }
             }
 
-
             height = charSize.height();
-            base = fontMetrics.ascent();
             QImage buffer;
             if(distanceField)
             {
@@ -244,7 +252,7 @@ void FontRender::run()
                 packed_image.img.fill(Qt::transparent);
             }
 
-            packed_image.ch = charList.at(i);
+            packed_image.ch = charFirst;
             QPainter painter(distanceField ? &buffer : &packed_image.img);
             painter.setFont(font);
             if(exporting)
@@ -253,7 +261,7 @@ void FontRender::run()
                 painter.fillRect(0, 0, width, height,
                                  ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
             painter.setPen(fontColor);
-            painter.drawText(0,base,charList.at(i));
+            painter.drawText(-firstBearing, base, charFirst);
             if(distanceField)
             {
                 dfcalculate(&buffer, distanceFieldScale, exporting);
@@ -379,9 +387,9 @@ bool FontRender::outputFNT(const QList<FontRec>& fontLst, const QImage& texture)
                           pGlyph->rc.y() << "\t" <<
                           pGlyph->crop.width() << "\t" <<
                           pGlyph->crop.height() << "\t" <<
-                          pGlyph->crop.x() << "\t" <<
+                          pGlyph->crop.x() + pGlyph->bearing<< "\t" <<
                           pGlyph->crop.y() << "\t" <<
-                          pGlyph->rc.width() << "\t" <<
+                          pGlyph->charWidth << "\t" <<
                           pGlyph->rc.height() << "\n";
         }
         const QList<kerningPair> *kerningList = &fontRecIt->m_kerningList;
@@ -445,7 +453,7 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture)
                        "height=\"" << pGlyph->crop.height() << "\" " <<
                        "Xoffset=\"" << pGlyph->crop.x() << "\" " <<
                        "Yoffset=\"" << pGlyph->crop.y() << "\" " <<
-                       "OrigWidth=\"" << pGlyph->rc.width() << "\" " <<
+                       "OrigWidth=\"" << pGlyph->charWidth << "\" " <<
                        "OrigHeight=\"" << pGlyph->rc.height() << "\" " <<
                        "/>\n";
         }

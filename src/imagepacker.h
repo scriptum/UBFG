@@ -12,6 +12,8 @@ struct packedImage
     bool border;
     bool merged;
     int textureId;
+    int charWidth;
+    int bearing;
     QChar ch;
 };
 
