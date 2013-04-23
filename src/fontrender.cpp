@@ -215,7 +215,7 @@ void FontRender::run()
             QSize charSize = fontMetrics.size(0, charFirst);
             packed_image.charWidth = fontMetrics.width(charFirst) / distanceFieldScale;
             int firstBearing = fontMetrics.leftBearing(charFirst);
-            firstBearing = firstBearing > 0 ? 0 : firstBearing;
+//            firstBearing = firstBearing > 0 ? 0 : firstBearing;
             packed_image.bearing = firstBearing / distanceFieldScale;
 //            qDebug() << fontMetrics.leftBearing(charFirst) << charFirst;
             width = charSize.width() - firstBearing;
@@ -224,11 +224,11 @@ void FontRender::run()
                 for (int j = 0; j < charList.size(); ++j)
                 {
                     QChar charSecond = charList.at(j);
-                    int secondBearing = fontMetrics.leftBearing(charSecond);
-                    secondBearing = secondBearing > 0 ? 0 : secondBearing;
+//                    int secondBearing = fontMetrics.leftBearing(charSecond);
+//                    secondBearing = secondBearing > 0 ? 0 : secondBearing;
 //                    int widthAll = charSize.width() + fontMetrics.size(0, charSecond).width() - secondBearing;
                     int widthAll = fontMetrics.width(charFirst) + fontMetrics.width(charSecond);
-                    QString kernPair(QString(charFirst) + charSecond);
+                    QString kernPair(QString(charFirst) + QString(charSecond));
 //                    float kerning = (float)(fontMetrics.size(0, kernPair).width() - widthAll) / (float)distanceFieldScale;
                     float kerning = (float)(fontMetrics.width(kernPair) - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
