@@ -213,10 +213,10 @@ void FontRender::run()
                 continue;
             QChar charFirst = charList.at(i);
             QSize charSize = fontMetrics.size(0, charFirst);
-            packed_image.charWidth = fontMetrics.width(charFirst);
+            packed_image.charWidth = fontMetrics.width(charFirst) / distanceFieldScale;
             int firstBearing = fontMetrics.leftBearing(charFirst);
             firstBearing = firstBearing > 0 ? 0 : firstBearing;
-            packed_image.bearing = firstBearing;
+            packed_image.bearing = firstBearing / distanceFieldScale;
 //            qDebug() << fontMetrics.leftBearing(charFirst) << charFirst;
             width = charSize.width() - firstBearing;
             if(exporting && ui->exportKerning->isChecked())
