@@ -287,7 +287,11 @@ void FontRender::run()
         if(ui->encoding->currentText() == "UNICODE")
             pCodec = NULL;
         else
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+            pCodec = QTextCodec::codecForName(ui->encoding->currentText().toLatin1());
+#else
             pCodec = QTextCodec::codecForName(ui->encoding->currentText().toAscii());
+#endif
         // draw glyphs
         if(!ui->transparent->isChecked() || ui->transparent->isEnabled())
             p.fillRect(0,0,texture.width(),texture.height(), bkgColor);

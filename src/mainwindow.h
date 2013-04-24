@@ -1,7 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
+#include <QtGlobal>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#   include <QtWidgets/QMainWindow>
+#else
+#   include <QMainWindow>
+#endif
+
 #include "fontrender.h"
 namespace Ui {
     class MainWindow;

@@ -2,6 +2,14 @@
 # Project created by QtCreator 2011-05-28T21:40:19
 # -------------------------------------------------
 TARGET = UBFG
+
+QT_VERSION=$$[QT_VERSION]
+
+contains(QT_VERSION, "^5.*") {
+  QT += widgets
+} else {
+}
+
 TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
