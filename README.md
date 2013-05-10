@@ -18,8 +18,8 @@ UBFG can export font into XML format (image in base64 format also stored in XML)
 
 UBFG generates two files: font.png and font.fnt. 
 
-  - font.png is an image, that represents your font texture. Yoou must load it as texture.
-  - font.fnt if a text file, that contains information about all glyphs in texture font.png. 
+  - font.png is an image, that represents your font texture. You must load it as texture.
+  - font.fnt is a text file, that contains information about all chars on font.png. 
 
 This information looks like:
 
