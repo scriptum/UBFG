@@ -6,55 +6,30 @@ ImagePacker::ImagePacker()
 }
 
 //pack images, return list of positions
-QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur, uint w, uint h)
+QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int heur, uint w, uint h)
 {
     int i, j, x, y;
     QList<packedImage*> images;
     for(i = 0; i < im->size(); i++)
         images << &im->operator [](i);
     crop(&images);
-    sort(&images);
 
     QList<QPoint> out;
-    Guillotine *head = new Guillotine;
-    Guillotine *n;
-    missingChars = 0;
-    area = 0;
-    mergedChars = 0;
-    neededArea = 0;
-    switch(packMethod)
+
+//    int maxRepeats = 30;
+//    if(bruteForce == false)
+//        maxRepeats = 1;
+
+    //repeat trying to find best solution
+//    for (int repeat = 0; repeat < maxRepeats; ++repeat)
     {
-    case GUILLOTINE:
+        sort(&images);
+        out.clear();
+        missingChars = 0;
+        area = 0;
+        mergedChars = 0;
+        neededArea = 0;
 
-        head->rc = QRect(0, 0, w, h);
-        head->head = head;
-        head->heuristicMethod = heur;
-        head->packer = this;
-
-        for(i = 0; i < images.size(); i++)
-        {
-            n = head->insertNode(&images.operator [](i)->img);
-            if(n)
-            {
-                if(!head->duplicate)
-                    area += n->image->width() * n->image->height();
-                else
-                    mergedChars++;
-                out << QPoint(n->rc.x(), n->rc.y());
-                images.operator [](i)->rc = QRect(n->rc.x(), n->rc.y(), images.at(i)->rc.width(), images.at(i)->rc.height());
-            }
-            else
-            {
-                out << QPoint(99999, 99999);
-                images.operator [](i)->rc = QRect(99999, 00000, images.at(i)->rc.width(), images.at(i)->rc.height());
-                missingChars++;
-            }
-            if(!head->duplicate)
-                neededArea += images.at(i)->img.width() * images.at(i)->img.height();
-        }
-        head->delGuillotine();
-        break;
-    case MAXRECTS:
         MaxRects rects;
         MaxRectsNode mrn;
         mrn.r = QRect(0, 0, w, h);
@@ -68,6 +43,7 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
         bool t;
         for(i = 0; i < images.size(); i++)
         {
+            images.at(i)->merged = false;
             t = false;
             for(j = 0; j < out.size(); j++)
             {
@@ -75,6 +51,7 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
                 {
                     pt = out.at(j)+QPoint(x, y);
                     t = true;
+                    images.at(i)->merged = true;
                     mergedChars++;
                     break;
                 }
@@ -92,10 +69,8 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
                 neededArea += images.at(i)->img.width() * images.at(i)->img.height();
             out << pt;
             images.operator [](i)->rc = QRect(pt.x(), pt.y(), images.at(i)->rc.width(), images.at(i)->rc.height());
-
-
         }
-        break;
+//        if(missingChars == 0) break;
     }
     return out;
 }
@@ -103,7 +78,12 @@ QList<QPoint> ImagePacker::pack(QList<packedImage> *im, int packMethod, int heur
 bool ImagePacker::compareImages(QImage* img1, QImage* img2, int* ii, int *jj)
 {
     if(!merge) return false;
-    if(!mergeBF) return img1->operator ==(*img2);
+    if(!mergeBF)
+    {
+        *ii = 0;
+        *jj = 0;
+        return img1->operator ==(*img2);
+    }
     int i1w = img1->width();
     int i1h = img1->height();
     int i2w = img2->width();

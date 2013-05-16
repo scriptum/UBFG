@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>843</width>
-    <height>761</height>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>63</number>
+             <number>81</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -173,9 +173,9 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_20">
+         <layout class="QHBoxLayout" name="fontColorLayout">
           <item>
-           <widget class="QLabel" name="label_16">
+           <widget class="QLabel" name="fontColorLabel">
             <property name="text">
              <string>Font Color</string>
             </property>
@@ -722,6 +722,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="distanceField">
+          <property name="text">
+           <string>Distance Field</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QGridLayout" name="gridLayout">
           <property name="bottomMargin">
            <number>0</number>
@@ -867,37 +874,6 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_8">
-          <item>
-           <widget class="QLabel" name="label_6">
-            <property name="whatsThis">
-             <string>123123</string>
-            </property>
-            <property name="text">
-             <string>Packing method:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboMethod">
-            <property name="currentIndex">
-             <number>1</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>Guillotine</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Maxrects</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0">
           <property name="sizeConstraint">
            <enum>QLayout::SetDefaultConstraint</enum>
@@ -1007,7 +983,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="updateButton">
             <property name="text">
              <string>Update</string>
             </property>
@@ -1087,9 +1063,9 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <layout class="QHBoxLayout" name="bitDepthLayout">
           <item>
-           <widget class="QLabel" name="label_15">
+           <widget class="QLabel" name="bitDepthLabel">
             <property name="text">
              <string>Image Bit Depth</string>
             </property>
@@ -1126,6 +1102,26 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="exportKerning">
+          <property name="text">
+           <string>Export kerning pairs</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="saveImageInsideXML">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include inside XML file base64-encoded version of image. If not checked, XML stores only font data and image exported into PNG/BMP file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Save image inside XML</string>
           </property>
          </widget>
         </item>
@@ -1202,7 +1198,7 @@
           <property name="title">
            <string>Load/save project</string>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_16">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -1213,16 +1209,16 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QPushButton" name="pushButton_7">
+            <widget class="QPushButton" name="pushButton_6">
              <property name="text">
-              <string>Load project...</string>
+              <string>Save project as...</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_6">
+            <widget class="QPushButton" name="pushButton_7">
              <property name="text">
-              <string>Save project as...</string>
+              <string>Load project...</string>
              </property>
             </widget>
            </item>
@@ -1315,7 +1311,7 @@
            <x>0</x>
            <y>0</y>
            <width>563</width>
-           <height>705</height>
+           <height>601</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">

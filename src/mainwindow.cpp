@@ -11,15 +11,22 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->fontColor->hide();
+    ui->fontColorLabel->hide();
+    ui->backgroundColor->hide();
+    delete ui->fontColorLayout;
+    ui->bitDepthLabel->hide();
+    ui->bitDepth->hide();
+    delete ui->bitDepthLayout;
+    ui->bruteForce->hide();
     thread = new FontRender(ui);
     thread->exporting = false;
-    connect(ui->pushButton_2, SIGNAL(clicked()), thread, SLOT(run()));
+    connect(ui->updateButton, SIGNAL(clicked()), thread, SLOT(run()));
     qRegisterMetaType<QImage>("QImage");
     connect(thread, SIGNAL(renderedImage(QImage)), ui->widget, SLOT(updatePixmap(QImage)));
-    //ui->pushButton_2->click();
+    ui->encoding->addItem("UNICODE");
     QList<QByteArray> avaiableCodecs = QTextCodec::availableCodecs ();
-    int i;
-    for(i = 0; i < avaiableCodecs.count(); i++)
+    for(int i = 0; i < avaiableCodecs.count(); i++)
     {
         ui->encoding->addItem(avaiableCodecs.at(i));
     }
@@ -82,27 +89,9 @@ void MainWindow::exportFont()
 }
 void MainWindow::bruteForce()
 {
-    int i, j, k;
     ui->bruteForce->setText("Please, wait...");
-    for(i = 0; i < ui->comboMethod->count(); i++)
-    {
-        for(j = 0; j < ui->comboHeuristic->count(); j++)
-        {
-            for(k = 0; k < ui->sortOrder->count(); k++)
-            {
-                ui->comboMethod->setCurrentIndex(i);
-                ui->sortOrder->setCurrentIndex(k);
-                ui->comboHeuristic->setCurrentIndex(j);
-                thread->run();
-                //~ thread->wait();
-                if(thread->done)
-                {
-                    ui->bruteForce->setText("BRUTE-FORCE");
-                    return;
-                }
-            }
-        }
-    }
+
+    thread->run();
     ui->bruteForce->setText("BRUTE-FORCE");
 }
 
@@ -144,7 +133,7 @@ void MainWindow::loadProject()
         projectDir = fi.path();
         project = fi.fileName();
         QSettings settings(file, QSettings::IniFormat, this);
-        
+
         ui->plainTextEdit->setPlainText(settings.value("charList", " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+\\/():;%&`'*#$=[]@^{}_~\"><").toString());
         ui->trim->setChecked(settings.value("trim", true).toBool());
         ui->borderTop->setValue(settings.value("borderTop", 0).toInt());
@@ -155,14 +144,22 @@ void MainWindow::loadProject()
         ui->mergeBF->setChecked(settings.value("mergeBF", true).toBool());
         ui->textureW->setValue(settings.value("textureW", 512).toInt());
         ui->textureH->setValue(settings.value("textureH", 512).toInt());
-        ui->comboMethod->setCurrentIndex(settings.value("method", 1).toInt());
+        ui->distanceField->setChecked(settings.value("distanceField", false).toBool());
         ui->comboHeuristic->setCurrentIndex(settings.value("heuristic", 1).toInt());
         ui->sortOrder->setCurrentIndex(settings.value("sortOrder", 2).toInt());
-        ui->outFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
-        ui->encoding->setCurrentIndex(settings.value("encoding", 0).toInt());
+        ui->outputFormat->setCurrentIndex(settings.value("outFormat", 0).toInt());
+        //compatible with old format without UNICODE and with export indexes instead of text
+        int encodingInt = settings.value("encoding", 0).toInt();
+        QString encodingStr = settings.value("encoding", 0).toString();
+        if(QString::number(encodingInt) == encodingStr)
+            ui->encoding->setCurrentIndex(encodingInt + 1);
+        else
+            ui->encoding->setCurrentIndex(ui->encoding->findText(encodingStr));
         ui->transparent->setChecked(settings.value("transparent", true).toBool());
         ui->outDir->setText(settings.value("outDir", homeDir).toString());
         ui->outFile->setText(settings.value("outFile", outFile).toString());
+        ui->exportKerning->setChecked(settings.value("kerning", true).toBool());
+        ui->saveImageInsideXML->setChecked(settings.value("imageInXML", false).toBool());
         int size = settings.beginReadArray("fonts");
         ui->listOfFonts->clear();
         for (int i = 0; i < size; ++i) {
@@ -172,6 +169,7 @@ void MainWindow::loadProject()
             item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsDragEnabled|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
         }
         settings.endArray();
+        thread->run();
     }
 }
 
@@ -186,7 +184,7 @@ void MainWindow::saveProject()
         projectDir = fi.path();
         project = fi.fileName();
         QSettings settings(file, QSettings::IniFormat, this);
-        
+
         settings.setValue("charList", ui->plainTextEdit->toPlainText());
         settings.setValue("trim", ui->trim->isChecked());
         settings.setValue("borderTop", ui->borderTop->value());
@@ -197,14 +195,16 @@ void MainWindow::saveProject()
         settings.setValue("mergeBF", ui->mergeBF->isChecked());
         settings.setValue("textureW", ui->textureW->value());
         settings.setValue("textureH", ui->textureH->value());
-        settings.setValue("method", ui->comboMethod->currentIndex());
+        settings.setValue("distanceField", ui->distanceField->isChecked());
         settings.setValue("heuristic", ui->comboHeuristic->currentIndex());
         settings.setValue("sortOrder", ui->sortOrder->currentIndex());
-        settings.setValue("outFormat", ui->outFormat->currentIndex());
-        settings.setValue("encoding", ui->encoding->currentIndex());
+        settings.setValue("outFormat", ui->outputFormat->currentIndex());
+        settings.setValue("encoding", ui->encoding->currentText());
         settings.setValue("transparent", ui->transparent->isChecked());
         settings.setValue("outDir", ui->outDir->text());
         settings.setValue("outFile", ui->outFile->text());
+        settings.setValue("kerning", ui->exportKerning->isChecked());
+        settings.setValue("imageInXML", ui->saveImageInsideXML->isChecked());
         settings.beginWriteArray("fonts");
         for (int i = 0; i < ui->listOfFonts->count(); ++i) {
             settings.setArrayIndex(i);
@@ -221,7 +221,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 void MainWindow::bitDepthChanged(int index) {
-    if (index == 1) 
+    if (index == 1)
         ui->transparent->setDisabled(true);
     else
         ui->transparent->setDisabled(false);

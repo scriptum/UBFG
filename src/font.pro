@@ -1,7 +1,15 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-05-28T21:40:19
 # -------------------------------------------------
-TARGET = font
+TARGET = UBFG
+
+QT_VERSION=$$[QT_VERSION]
+
+contains(QT_VERSION, "^5.*") {
+  QT += widgets
+} else {
+}
+
 TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -19,3 +27,5 @@ HEADERS += mainwindow.h \
     guillotine.h \
     maxrects.h
 FORMS += mainwindow.ui
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math -fomit-frame-pointer

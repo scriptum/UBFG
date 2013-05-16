@@ -7,15 +7,15 @@ MaxRects::MaxRects()
 QPoint MaxRects::insertNode(QImage * img)
 {
     int i, j;
-    int min = 999999999, mini = -1, m;
+    int min = 999999999, mini = -1, weight = 0;
     if(img->width() == 0 || img->height() == 0)
         return QPoint(0,0);
-    static int nextx = 0, nexty = 0, prevx;
-    static bool ltr = true;
-    bool leftNeighbor, rightNeighbor, _leftNeighbor, _rightNeighbor;
+    bool leftNeighbor = false, rightNeighbor = false, _leftNeighbor, _rightNeighbor;
+
     for(i = 0; i < F.size(); i++)
     {
-        if(F.at(i).r.width() >= img->width() && F.at(i).r.height() >= img->height())
+        MaxRectsNode RectNode = F.at(i);
+        if(RectNode.r.width() >= img->width() && RectNode.r.height() >= img->height())
         {
             switch(heuristic)
             {
@@ -24,47 +24,61 @@ QPoint MaxRects::insertNode(QImage * img)
                     i = F.size();
                     continue;
                 case ImagePacker::TL:
-                    m = F.at(i).r.y();
+
+                    weight = RectNode.r.y();
                     _leftNeighbor = _rightNeighbor = false;
+                    //loop over all rectangles
                     for(int k = 0; k < R.size(); k++)
                     {
-                        if(qAbs(R.at(k).y() + R.at(k).height()/2 - F.at(i).r.y() - F.at(i).r.height()/2) < 
-                            qMax(R.at(k).height(), F.at(i).r.height())/2)
+                        QRect RectIter = R.at(k);
+                        //pffff whait is this? But it works!
+                        if(qAbs(RectIter.y() +
+                                RectIter.height() / 2 -
+                                RectNode.r.y() -
+                                RectNode.r.height() / 2) <
+                                qMax(RectIter.height(), RectNode.r.height()) / 2)
                         {
-                            if(R.at(k).x() + R.at(k).width() == F.at(i).r.x()){m -= 2; _leftNeighbor = true;}
-                            if(R.at(k).x() == F.at(i).r.x() + F.at(i).r.width()){m -= 2; _rightNeighbor = true;}
+                            if(RectIter.x() + RectIter.width() == RectNode.r.x())
+                            {
+                                weight -= 2;
+                                _leftNeighbor = true;
+                            }
+                            if(RectIter.x() == RectNode.r.x() + RectNode.r.width())
+                            {
+                                weight -= 2;
+                                _rightNeighbor = true;
+                            }
                         }
                     }
                     break;
                 case ImagePacker::BAF:
-                    m = F.at(i).r.width() * F.at(i).r.height();
+                    weight = F.at(i).r.width() * F.at(i).r.height();
                     break;
                 case ImagePacker::BSSF:
-                    m = qMin(F.at(i).r.width() - img->width(), F.at(i).r.height() - img->height());
+                    weight = qMin(F.at(i).r.width() - img->width(), F.at(i).r.height() - img->height());
                     break;
                 case ImagePacker::BLSF:
-                    m = qMax(F.at(i).r.width() - img->width(), F.at(i).r.height() - img->height());
+                    weight = qMax(F.at(i).r.width() - img->width(), F.at(i).r.height() - img->height());
                     break;
                 case ImagePacker::MINW:
-                    m = F.at(i).r.width();
+                    weight = F.at(i).r.width();
                     break;
                 case ImagePacker::MINH:
-                    m = F.at(i).r.height();
+                    weight = F.at(i).r.height();
             }
-            if(m < min)
+            if(weight < min)
             {
-                min = m;
+                min = weight;
                 mini = i;
                 leftNeighbor = _leftNeighbor;
                 rightNeighbor = _rightNeighbor;
             }
         }
     }
-    if(mini>=0)
+    if(mini >= 0)
     {
         i = mini;
         MaxRectsNode n0;
-        int k;
         QRect buf(F.at(i).r.x(), F.at(i).r.y(), img->width(), img->height());
         if(heuristic == ImagePacker::TL) {
             if(!leftNeighbor && F.at(i).r.x() != 0 && F.at(i).r.width() + F.at(i).r.x() == w)
@@ -75,9 +89,6 @@ QPoint MaxRects::insertNode(QImage * img)
         n0.r = buf;
         R << buf;
         n0.i = img;
-        nextx = n0.r.x() + n0.r.width();
-        nexty = F.at(i).r.y() + img->height();
-        prevx = n0.r.x();
         if(F.at(i).r.width() > img->width())
         {
             MaxRectsNode n;

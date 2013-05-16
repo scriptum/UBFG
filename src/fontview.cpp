@@ -18,11 +18,8 @@ void FontView::paintEvent(QPaintEvent * /* event */)
 void FontView::updatePixmap(const QImage &image)
 {
     texture = QPixmap::fromImage(image);
-    //image.~QImage();
     this->setMinimumSize(texture.width(), texture.height());
     update();
-
-    //qDebug("%d %d", texture.width(), texture.height());
 }
 
 void FontView::rescale(int index)

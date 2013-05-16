@@ -2,7 +2,8 @@
 *.d
 *.exe
 *.dll
-font
+*.pro.user
+UBFG
 Makefile
 moc_*
 ui_*.h
