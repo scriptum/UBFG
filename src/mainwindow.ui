@@ -1058,6 +1058,11 @@
               <string>XML</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>BMFont</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
