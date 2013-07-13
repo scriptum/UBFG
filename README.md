@@ -35,7 +35,7 @@ This information looks like:
 
 Here:
 
-* Char - ASCII number of your char (CP 1251 codepage). For example, 32 is a 'space'
+* Char - UNICODE number of your char (codepage varies and may be specified before export). For example, 32 is a 'space'
 * X pos - x position of glyph on texture
 * Y pos - y position of glyph on texture
 * Width - width of glyph on texture (glyphs are cropped and Width and Orig Width aren't equal)
