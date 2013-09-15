@@ -31,37 +31,63 @@
         <hr>
 
         <section id="main_content">
-          <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+          <h2>
+<a name="ultimate-bitmap-font-generator" class="anchor" href="#ultimate-bitmap-font-generator"><span class="octicon octicon-link"></span></a>Ultimate Bitmap Font Generator</h2>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>Ultimate bitmap font generator - useful tool to create compact font textures for games</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>If you know Russian - welcome: <a href="http://www.gamedev.ru/projects/forum/?id=152527">http://www.gamedev.ru/projects/forum/?id=152527</a></p>
+
+<p>Feature list:</p>
+
+<ul>
+<li>multiple fonts may be packed into one texture</li>
+<li>extremely effective packing algorithm + subcharacters merging</li>
+<li>optimizied not only for English: generate Russian, Japanese, Chinese fonts</li>
+<li>easy-to-create characters list from text</li>
+<li>distance fields for easy OpenGL scalable fonts</li>
+<li>exporting kerning pairs</li>
+<li>free and open-source project</li>
+</ul><p>UBFG can export font into XML format (image in base64 format also stored in XML) or into it's own .fnt format, - ready to use with Cheetah 2D engine. XML format is self-described, .fnt format uses following spec.</p>
+
+<p>UBFG generates two files: font.png and font.fnt. </p>
+
+<ul>
+<li>font.png is an image, that represents your font texture. You must load it as texture.</li>
+<li>font.fnt is a text file, that contains information about all chars on font.png. </li>
+</ul><p>This information looks like:</p>
+
+<pre><code>Arial 9pt -- font name and size
+Char  X pos   Y pos   Width   Height   Xoffset  Yoffset  Orig W   Orig H
+32    0       0       0       0        3        14       3        14
+97    90      36      5       7        1        4        7        14
+98    0       41      5       9        1        2        7        14
+kerning pairs:
+32 97 -1
+32 98 -0.5
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>Here:</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<ul>
+<li>Char - UNICODE number of your char (codepage varies and may be specified before export). For example, 32 is a 'space'</li>
+<li>X pos - x position of glyph on texture</li>
+<li>Y pos - y position of glyph on texture</li>
+<li>Width - width of glyph on texture (glyphs are cropped and Width and Orig Width aren't equal)</li>
+<li>Height - height of glyph on texture</li>
+<li>Xoffset - distance on the x-axis, on which glyph must be shifted</li>
+<li>Yoffset - distance on the y-axis, on which glyph must be shifted</li>
+<li>Orig W - original width of glyph</li>
+<li>Orig H - original height of glyph</li>
+</ul><p>Also fnt format may have <em>kerning pairs:</em> a set of kerning pairs listed after phrase "kerning pairs:". 
+First number if a first character in pair, second number - second character in pair, third number - 
+kerning value. Note: this value may be with floating point if you use distance fields.</p>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p><img src="https://github.com/scriptum/UBFG/raw/master/readme.png" alt="Help image"></p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<p>Screenshot:</p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p><img src="https://github.com/scriptum/UBFG/raw/master/screenshot.png" alt="Screenshot"></p>
         </section>
 
         <footer>
