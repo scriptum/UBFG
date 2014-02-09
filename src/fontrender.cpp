@@ -203,6 +203,7 @@ void FontRender::run()
             font.setWeight(QFont::Bold);
         if (fontRec.m_style & FontRec::ITALIC)
             font.setItalic(true);
+        fontRec.m_qfont = font;
         //rendering glyphs
         QFontMetrics fontMetrics(font);
         base = fontMetrics.ascent();
@@ -314,6 +315,8 @@ void FontRender::run()
         imageFileName = fileName + "." + imageExtension;
         if (ui->outputFormat->currentText().toLower() == QString("xml"))
             result = outputXML(fontLst, texture);
+        else if (ui->outputFormat->currentText().toLower() == QString("bmfont"))
+            result = outputBMFont(fontLst, texture);
         else
             result = outputFNT(fontLst, texture);
         // notify user
@@ -485,5 +488,99 @@ bool FontRender::outputXML(const QList<FontRec>& fontLst, const QImage& texture)
         }
     }
     fontStream << "</fontList>\n";
+    return true;
+}
+
+bool FontRender::outputBMFont(const QList<FontRec>& fontLst, const QImage& texture)
+{
+    int index = 0;
+    QList<FontRec>::const_iterator fontRecIt;
+    for (fontRecIt = fontLst.begin(); fontRecIt != fontLst.end(); ++fontRecIt)
+    {
+        // create output file names
+        QString fntFileName = fontLst.size() > 1 ? fileName + "_" + QString::number(index++) + ".fnt" : fileName + ".fnt";
+        // attempt to make output font file
+        QFile fntFile(fntFileName);
+        if (!fntFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QMessageBox::critical(0, "Error", "Cannot create file " + fntFileName);
+            return false;
+        }
+        QTextStream fontStream(&fntFile);
+        fontStream.setFieldAlignment(QTextStream::AlignLeft);
+        // output "info" tag
+        fontStream << "info " <<
+                      "face=\"" << fontRecIt->m_font << "\" " <<
+                      "size=" << fontRecIt->m_size << " " <<
+                      "bold=" << (fontRecIt->m_style & FontRec::BOLD ? 1 : 0) << " " <<
+                      "italic=" << (fontRecIt->m_style & FontRec::ITALIC ? 1 : 0) << " " <<
+                      "charset=\"\" " <<
+                      "unicode=1 " <<
+                      "stretchH=100 " <<
+                      "smooth=" << (fontRecIt->m_style & FontRec::SMOOTH ? 1 : 0) << " " <<
+                      "aa=1 " <<
+                      "padding=" << packer.borderTop << "," << packer.borderRight << "," << packer.borderBottom << "," << packer.borderLeft << " " <<
+                      "spacing=0,0 " <<
+                      "outline=0" << endl;
+        // output "common" tag
+        QFontMetrics fontMetrics(fontRecIt->m_qfont);
+        bool transparent = ui->transparent->isEnabled() && ui->transparent->isChecked();
+        fontStream << "common " <<
+                      "lineHeight=" << fontMetrics.height() << " " <<
+                      "base=" << fontMetrics.ascent() << " " <<
+                      "scaleW=" << texture.width() << " " <<
+                      "scaleH=" << texture.height() << " " <<
+                      "pages=1 " <<
+                      "packed=0 " <<
+                      "alphaChnl=" << (transparent ? 0 : 4) << " " <<
+                      "redChnl=" << (transparent ? 4 : 0) << " " <<
+                      "greenChnl=" << (transparent ? 4 : 0) << " " <<
+                      "blueChnl=" << (transparent ? 4 : 0) << endl;
+        // output "page" tag
+        fontStream << "page " <<
+                      "id=0 " <<
+                      "file=\"" << ui->outFile->text() + "." + imageExtension << "\"" << endl;
+        // output "chars" tag
+        fontStream << "chars " <<
+                      "count=" << fontRecIt->m_glyphLst.size() << endl;
+        // output each glyph record
+        QList<const packedImage*>::const_iterator chrItr;
+        for (chrItr = fontRecIt->m_glyphLst.begin(); chrItr != fontRecIt->m_glyphLst.end(); ++chrItr)
+        {
+            const packedImage* pGlyph = *chrItr;
+            // output glyph metrics
+            fontStream << "char " <<
+                          "id=" << qSetFieldWidth(4) << pGlyph->ch.unicode() << qSetFieldWidth(0) << " " <<
+                          "x=" << qSetFieldWidth(5) << pGlyph->rc.x() << qSetFieldWidth(0) << " " <<
+                          "y=" << qSetFieldWidth(5) << pGlyph->rc.y() << qSetFieldWidth(0) << " " <<
+                          "width=" << qSetFieldWidth(5) << pGlyph->img.width() << qSetFieldWidth(0) << " " <<
+                          "height=" << qSetFieldWidth(5) << pGlyph->img.height() << qSetFieldWidth(0) << " " <<
+                          "xoffset=" << qSetFieldWidth(5) << pGlyph->crop.x() + pGlyph->bearing - (int)packer.borderLeft << qSetFieldWidth(0) << " " <<
+                          "yoffset=" << qSetFieldWidth(5) << pGlyph->crop.y() - (int)packer.borderTop << qSetFieldWidth(0) << " " <<
+                          "xadvance=" << qSetFieldWidth(5) << pGlyph->charWidth << qSetFieldWidth(0) << " " <<
+                          "page=0  " <<
+                          "chnl=15" << endl;
+        }
+        const QList<kerningPair> *kerningList = &fontRecIt->m_kerningList;
+        if(kerningList->length() > 0)
+        {
+            // output "kernings" tag
+            fontStream << "kernings " <<
+                          "count=" << kerningList->size() << endl;
+            // output each kerning pair
+            for (int i = 0; i < kerningList->length(); ++i) {
+                fontStream << "kerning " <<
+                              "first=" << qSetFieldWidth(3) << kerningList->at(i).first.unicode() << qSetFieldWidth(0) << " " <<
+                              "second=" << qSetFieldWidth(3) << kerningList->at(i).second.unicode() << qSetFieldWidth(0) << " " <<
+                              "amount=" << kerningList->at(i).kerning << endl;
+            }
+        }
+    }
+    /* output font texture */
+    if(!texture.save(imageFileName, qPrintable(ui->outFormat->currentText())))
+    {
+        QMessageBox::critical(0, "Error", "Cannot save image " + imageFileName);
+        return false;
+    }
     return true;
 }

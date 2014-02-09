@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>81</number>
+             <number>1</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -1033,7 +1033,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="encoding"/>
+           <widget class="QComboBox" name="encoding">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="currentText">
+             <string notr="true"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -1056,6 +1063,11 @@
             <item>
              <property name="text">
               <string>XML</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>BMFont</string>
              </property>
             </item>
            </widget>
@@ -1310,8 +1322,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>563</width>
-           <height>601</height>
+           <width>566</width>
+           <height>604</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">

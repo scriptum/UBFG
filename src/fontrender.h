@@ -67,12 +67,14 @@ private:
         int     m_size;
         Metric  m_metric;
         int     m_style;
+        QFont   m_qfont;
         QList<const packedImage*> m_glyphLst;
         QList<kerningPair> m_kerningList;
     };
 
     bool outputFNT(const QList<FontRec>& fontLst, const QImage& texture);
     bool outputXML(const QList<FontRec>& fontLst, const QImage& texture);
+    bool outputBMFont(const QList<FontRec>& fontLst, const QImage& texture);
     unsigned int qchar2ui(QChar ch);
     QImage texture;
     QList<QImage> glyphs;

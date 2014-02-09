@@ -25,7 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<QImage>("QImage");
     connect(thread, SIGNAL(renderedImage(QImage)), ui->widget, SLOT(updatePixmap(QImage)));
     ui->encoding->addItem("UNICODE");
-    QList<QByteArray> avaiableCodecs = QTextCodec::availableCodecs ();
+    QList<QByteArray> avaiableCodecs = QTextCodec::availableCodecs();
+    qSort(avaiableCodecs);
     for(int i = 0; i < avaiableCodecs.count(); i++)
     {
         ui->encoding->addItem(avaiableCodecs.at(i));
