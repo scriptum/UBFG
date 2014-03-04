@@ -240,7 +240,7 @@ void FontRender::run()
                 }
             }
 
-            height = charSize.height();
+            height = charSize.height() + fontMetrics.leading();
             QImage buffer;
             if(distanceField)
             {
@@ -262,7 +262,7 @@ void FontRender::run()
                 painter.fillRect(0, 0, width, height,
                                  ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
             painter.setPen(fontColor);
-            painter.drawText(-firstBearing, base, charFirst);
+            painter.drawText(-firstBearing - fontMetrics.leading(), base, charFirst);
             if(distanceField)
             {
                 dfcalculate(&buffer, distanceFieldScale, exporting);
