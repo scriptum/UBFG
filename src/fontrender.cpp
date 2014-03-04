@@ -206,7 +206,7 @@ void FontRender::run()
         fontRec.m_qfont = font;
         //rendering glyphs
         QFontMetrics fontMetrics(font);
-        base = fontMetrics.ascent();
+        base = fontMetrics.ascent() + fontMetrics.leading();
         for (i = 0; i < charList.size(); i++)
         {
             packedImage packed_image;
@@ -262,7 +262,7 @@ void FontRender::run()
                 painter.fillRect(0, 0, width, height,
                                  ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
             painter.setPen(fontColor);
-            painter.drawText(-firstBearing - fontMetrics.leading(), base, charFirst);
+            painter.drawText(-firstBearing, base, charFirst);
             if(distanceField)
             {
                 dfcalculate(&buffer, distanceFieldScale, exporting);
