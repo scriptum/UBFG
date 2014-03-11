@@ -8,6 +8,7 @@
 #include <QTextStream>
 #include <QBuffer>
 #include <QDebug>
+#include <QTime>
 #include <stdio.h>
 #include <math.h>
 
@@ -22,9 +23,8 @@ FontRender::~FontRender()
 
 struct Point
 {
-    int dx, dy;
-
-    int DistSq() const { return dx * dx + dy * dy; }
+    short dx, dy;
+    int f;
 };
 
 struct Grid
@@ -32,18 +32,13 @@ struct Grid
     Point grid[HEIGHT][WIDTH];
 };
 
-Point pointInside = { 0, 0 };
-Point pointEmpty = { 9999, 9999 };
-Grid grid1, grid2;
+Point pointInside = { 0, 0, 0 };
+Point pointEmpty = { 9999, 9999, 9999*9999 };
+Grid grid[2];
 
 static inline Point Get(Grid &g, int x, int y, int maxW, int maxH)
 {
-    // OPTIMIZATION: you can skip the edge check code if you make your grid
-    // have a 1-pixel gutter.
-    if ( x >= 0 && y >= 0 && x < maxW && y < maxH )
-        return g.grid[y][x];
-    else
-        return pointEmpty;
+    return g.grid[y][x];
 }
 
 static inline void Put( Grid &g, int x, int y, const Point &p )
@@ -51,102 +46,126 @@ static inline void Put( Grid &g, int x, int y, const Point &p )
     g.grid[y][x] = p;
 }
 
-static inline void Compare( Grid &g, Point &p, int x, int y, int offsetx, int offsety, int maxW, int maxH )
-{
-    Point other = Get( g, x+offsetx, y+offsety, maxW, maxH );
-    other.dx += offsetx;
-    other.dy += offsety;
-
-    if (other.DistSq() < p.DistSq())
-        p = other;
-}
+/* macro is a way faster than inline */
+#define Compare(offsetx, offsety)                                              \
+do {                                                                           \
+    int add;                                                                   \
+    Point other = Get(g, x + offsetx, y + offsety, maxW, maxH);                \
+    if(offsety == 0) {                                                         \
+        add = 2 * other.dx + 1;                                                \
+    }                                                                          \
+    else if(offsetx == 0) {                                                    \
+        add = 2 * other.dy + 1;                                                \
+    }                                                                          \
+    else {                                                                     \
+        add = 2 * (other.dy + other.dx + 1);                                   \
+    }                                                                          \
+    other.f += add;                                                            \
+    if (other.f < p.f)                                                         \
+    {                                                                          \
+        p.f = other.f;                                                         \
+        if(offsety == 0) {                                                     \
+            p.dx = other.dx + 1;                                               \
+            p.dy = other.dy;                                                   \
+        }                                                                      \
+        else if(offsetx == 0) {                                                \
+            p.dy = other.dy + 1;                                               \
+            p.dx = other.dx;                                                   \
+        }                                                                      \
+        else {                                                                 \
+            p.dy = other.dy + 1;                                               \
+            p.dx = other.dx + 1;                                               \
+        }                                                                      \
+    }                                                                          \
+} while(0)
 
 static void GenerateSDF(Grid &g, int maxW, int maxH)
 {
-    // Pass 0
-    for (int y=0;y<maxH;y++)
+    for (int y = 1; y <= maxH;y++)
     {
-        for (int x=0;x<maxW;x++)
+        for (int x = 1; x <= maxW;x++)
         {
-            Point p = Get( g, x, y, maxW, maxH );
-            Compare( g, p, x, y, -1,  0, maxW, maxH );
-            Compare( g, p, x, y,  0, -1, maxW, maxH );
-            Compare( g, p, x, y, -1, -1, maxW, maxH );
-            Compare( g, p, x, y,  1, -1, maxW, maxH );
-            Put( g, x, y, p );
-        }
-
-        for (int x=maxW-1;x>=0;x--)
-        {
-            Point p = Get( g, x, y, maxW, maxH );
-            Compare( g, p, x, y, 1, 0, maxW, maxH );
-            Put( g, x, y, p );
+            Point p = Get(g, x, y, maxW, maxH);
+            Compare(-1,  0);
+            Compare( 0, -1);
+            Compare(-1, -1);
+            Compare( 1, -1);
+            Put(g, x, y, p);
         }
     }
 
-    // Pass 1
-    for (int y=maxH-1;y>=0;y--)
+    for(int y = maxH; y > 0; y--)
     {
-        for (int x=maxW-1;x>=0;x--)
+        for(int x = maxW; x > 0; x--)
         {
-            Point p = Get( g, x, y, maxW, maxH );
-            Compare( g, p, x, y,  1,  0, maxW, maxH );
-            Compare( g, p, x, y,  0,  1, maxW, maxH );
-            Compare( g, p, x, y, -1,  1, maxW, maxH );
-            Compare( g, p, x, y,  1,  1, maxW, maxH );
-            Put( g, x, y, p );
-        }
-
-        for (int x=0;x<maxW;x++)
-        {
-            Point p = Get( g, x, y, maxW, maxH );
-            Compare( g, p, x, y, -1, 0, maxW, maxH );
-            Put( g, x, y, p );
+            Point p = Get(g, x, y, maxW, maxH);
+            Compare( 1,  0);
+            Compare( 0,  1);
+            Compare(-1,  1);
+            Compare( 1,  1);
+            Put(g, x, y, p);
         }
     }
 }
 
-static void dfcalculate(QImage *img, int distanceFieldScale, bool exporting)
+static void dfcalculate(QImage *img, int distanceFieldScale, bool transparent)
 {
     int x, y;
     int maxW = img->width(), maxH = img->height();
-    for(y = 0; y < maxH; y++)
-        for(x = 0; x < maxW; x++)
+    /* create 1-pixel gap */
+    for(x = 0; x < maxW+2; x++)
+    {
+        Put(grid[0], x, 0, pointInside);
+        Put(grid[1], x, 0, pointEmpty);
+    }
+    for(y = 1; y <= maxH; y++)
+    {
+        Put(grid[0], 0, y, pointInside);
+        Put(grid[1], 0, y, pointEmpty);
+        for(x = 1; x <= maxW; x++)
         {
-            if ( qGreen(img->pixel(x, y)) < 128 )
+            if(qGreen(img->pixel(x - 1, y - 1)) > 128)
             {
-                Put( grid1, x, y, pointInside );
-                Put( grid2, x, y, pointEmpty );
+                Put(grid[0], x, y, pointEmpty);
+                Put(grid[1], x, y, pointInside);
             }
             else
             {
-                Put( grid2, x, y, pointInside );
-                Put( grid1, x, y, pointEmpty );
+                Put(grid[0], x, y, pointInside);
+                Put(grid[1], x, y, pointEmpty);
             }
         }
-    // Generate the SDF.
-    GenerateSDF(grid1, maxW, maxH );
-    GenerateSDF(grid2, maxW, maxH );
-    for(y = 0; y < maxH; y++)
-        for(x = 0; x < maxW; x++)
+        Put(grid[0], maxW + 1, y, pointInside);
+        Put(grid[1], maxW + 1, y, pointEmpty);
+    }
+    for(x = 0; x < maxW + 2; x++)
+    {
+        Put(grid[0], x, maxH + 1, pointInside);
+        Put(grid[1], x, maxH + 1, pointEmpty);
+    }
+    GenerateSDF(grid[0], maxW, maxH);
+    GenerateSDF(grid[1], maxW, maxH);
+    for(y = 1; y <= maxH; y++)
+        for(x = 1; x <= maxW; x++)
         {
-            // Calculate the actual distance from the dx/dy
-            double dist1 = sqrt( (double)Get( grid1, x, y, maxW, maxH ).DistSq() );
-            double dist2 = sqrt( (double)Get( grid2, x, y, maxW, maxH ).DistSq() );
+            double dist1 = sqrt((double)(Get(grid[0], x, y, maxW, maxH ).f + 1));
+            double dist2 = sqrt((double)(Get(grid[1], x, y, maxW, maxH ).f + 1));
             double dist = dist1 - dist2;
-            // Clamp and scale it, just for display purposes.
+            // Clamp and scale
             int c = dist * 64 / distanceFieldScale + 128;
             if ( c < 0 ) c = 0;
             if ( c > 255 ) c = 255;
-            if(exporting)
-                img->setPixel(x, y, qRgba(255,255,255,c));
+            if(transparent)
+                img->setPixel(x - 1, y - 1, qRgba(255,255,255,c));
             else
-                img->setPixel(x, y, qRgb(c,c,c));
+                img->setPixel(x - 1, y - 1, qRgb(c,c,c));
         }
 }
 
 void FontRender::run()
 {
+    // QTime myTimer;
+    // myTimer.start();
     done = false;
     QList<FontRec> fontLst;
     QList<packedImage> glyphLst;
@@ -265,7 +284,8 @@ void FontRender::run()
             painter.drawText(-firstBearing, base, charFirst);
             if(distanceField)
             {
-                dfcalculate(&buffer, distanceFieldScale, exporting);
+                dfcalculate(&buffer, distanceFieldScale, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
+                // buffer.save(charList.at(i), "PNG");
                 packed_image.img = buffer.scaled(buffer.size() / distanceFieldScale);
             }
             packed_image.crop = packed_image.img.rect();
@@ -339,6 +359,8 @@ void FontRender::run()
         if(packer.missingChars == 0) done = true;
         emit renderedImage(texture);
     }
+    // int nMilliseconds = myTimer.elapsed();
+    // qDebug() << nMilliseconds;
 }
 
 unsigned int FontRender::qchar2ui(QChar ch)
