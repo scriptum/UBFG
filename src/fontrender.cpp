@@ -29,28 +29,29 @@ struct Point
 
 struct Grid
 {
-    Point grid[HEIGHT][WIDTH];
+    int w, h;
+    Point *grid;
 };
 
 Point pointInside = { 0, 0, 0 };
 Point pointEmpty = { 9999, 9999, 9999*9999 };
 Grid grid[2];
 
-static inline Point Get(Grid &g, int x, int y, int maxW, int maxH)
+static inline Point Get(Grid &g, int x, int y)
 {
-    return g.grid[y][x];
+    return g.grid[y * (g.w + 2) + x];
 }
 
-static inline void Put( Grid &g, int x, int y, const Point &p )
+static inline void Put(Grid &g, int x, int y, const Point &p)
 {
-    g.grid[y][x] = p;
+    g.grid[y * (g.w + 2) + x] = p;
 }
 
 /* macro is a way faster than inline */
 #define Compare(offsetx, offsety)                                              \
 do {                                                                           \
     int add;                                                                   \
-    Point other = Get(g, x + offsetx, y + offsety, maxW, maxH);                \
+    Point other = Get(g, x + offsetx, y + offsety);                            \
     if(offsety == 0) {                                                         \
         add = 2 * other.dx + 1;                                                \
     }                                                                          \
@@ -79,13 +80,13 @@ do {                                                                           \
     }                                                                          \
 } while(0)
 
-static void GenerateSDF(Grid &g, int maxW, int maxH)
+static void GenerateSDF(Grid &g)
 {
-    for (int y = 1; y <= maxH;y++)
+    for (int y = 1; y <= g.h; y++)
     {
-        for (int x = 1; x <= maxW;x++)
+        for (int x = 1; x <= g.w; x++)
         {
-            Point p = Get(g, x, y, maxW, maxH);
+            Point p = Get(g, x, y);
             Compare(-1,  0);
             Compare( 0, -1);
             Compare(-1, -1);
@@ -94,11 +95,11 @@ static void GenerateSDF(Grid &g, int maxW, int maxH)
         }
     }
 
-    for(int y = maxH; y > 0; y--)
+    for(int y = g.h; y > 0; y--)
     {
-        for(int x = maxW; x > 0; x--)
+        for(int x = g.w; x > 0; x--)
         {
-            Point p = Get(g, x, y, maxW, maxH);
+            Point p = Get(g, x, y);
             Compare( 1,  0);
             Compare( 0,  1);
             Compare(-1,  1);
@@ -111,18 +112,22 @@ static void GenerateSDF(Grid &g, int maxW, int maxH)
 static void dfcalculate(QImage *img, int distanceFieldScale, bool transparent)
 {
     int x, y;
-    int maxW = img->width(), maxH = img->height();
+    int w = img->width(), h = img->height();
+    grid[0].w = grid[1].w = w;
+    grid[0].h = grid[1].h = h;
+    grid[0].grid = (Point*)malloc(sizeof(Point) * (w + 2) * (h + 2));
+    grid[1].grid = (Point*)malloc(sizeof(Point) * (w + 2) * (h + 2));
     /* create 1-pixel gap */
-    for(x = 0; x < maxW+2; x++)
+    for(x = 0; x < w + 2; x++)
     {
         Put(grid[0], x, 0, pointInside);
         Put(grid[1], x, 0, pointEmpty);
     }
-    for(y = 1; y <= maxH; y++)
+    for(y = 1; y <= h; y++)
     {
         Put(grid[0], 0, y, pointInside);
         Put(grid[1], 0, y, pointEmpty);
-        for(x = 1; x <= maxW; x++)
+        for(x = 1; x <= w; x++)
         {
             if(qGreen(img->pixel(x - 1, y - 1)) > 128)
             {
@@ -135,37 +140,39 @@ static void dfcalculate(QImage *img, int distanceFieldScale, bool transparent)
                 Put(grid[1], x, y, pointEmpty);
             }
         }
-        Put(grid[0], maxW + 1, y, pointInside);
-        Put(grid[1], maxW + 1, y, pointEmpty);
+        Put(grid[0], w + 1, y, pointInside);
+        Put(grid[1], w + 1, y, pointEmpty);
     }
-    for(x = 0; x < maxW + 2; x++)
+    for(x = 0; x < w + 2; x++)
     {
-        Put(grid[0], x, maxH + 1, pointInside);
-        Put(grid[1], x, maxH + 1, pointEmpty);
+        Put(grid[0], x, h + 1, pointInside);
+        Put(grid[1], x, h + 1, pointEmpty);
     }
-    GenerateSDF(grid[0], maxW, maxH);
-    GenerateSDF(grid[1], maxW, maxH);
-    for(y = 1; y <= maxH; y++)
-        for(x = 1; x <= maxW; x++)
+    GenerateSDF(grid[0]);
+    GenerateSDF(grid[1]);
+    for(y = 1; y <= h; y++)
+        for(x = 1; x <= w; x++)
         {
-            double dist1 = sqrt((double)(Get(grid[0], x, y, maxW, maxH ).f + 1));
-            double dist2 = sqrt((double)(Get(grid[1], x, y, maxW, maxH ).f + 1));
+            double dist1 = sqrt((double)(Get(grid[0], x, y).f + 1));
+            double dist2 = sqrt((double)(Get(grid[1], x, y).f + 1));
             double dist = dist1 - dist2;
             // Clamp and scale
-            int c = dist * 64 / distanceFieldScale + 128;
-            if ( c < 0 ) c = 0;
-            if ( c > 255 ) c = 255;
+            int c = dist + 128;
+            if(c < 0) c = 0;
+            if(c > 255) c = 255;
             if(transparent)
                 img->setPixel(x - 1, y - 1, qRgba(255,255,255,c));
             else
                 img->setPixel(x - 1, y - 1, qRgb(c,c,c));
         }
+    free(grid[0].grid);
+    free(grid[1].grid);
 }
 
 void FontRender::run()
 {
-    // QTime myTimer;
-    // myTimer.start();
+    QTime myTimer;
+    myTimer.start();
     done = false;
     QList<FontRec> fontLst;
     QList<packedImage> glyphLst;
@@ -194,7 +201,9 @@ void FontRender::run()
         distanceField = false;
         baseTxtrFormat = QImage::Format_ARGB32_Premultiplied;
     }
-    int distanceFieldScale = 8;
+    int distanceFieldScale = 4;
+    if(exporting)
+        distanceFieldScale *= 4;
     if(!distanceField)
         distanceFieldScale = 1;
     for(k = 0; k < ui->listOfFonts->count(); k++)
@@ -316,6 +325,11 @@ void FontRender::run()
             if(glyphLst.at(i).merged == false)
                     p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
 
+        QImage scaled = texture.scaled(texture.size() * 8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
+        QImage texture1 = (scaled.scaled(texture.size()));
+        texture = texture1;
+        
         if (ui->transparent->isEnabled() && ui->transparent->isChecked())
         {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
@@ -357,10 +371,12 @@ void FontRender::run()
                              QString::number(packer.mergedChars) + QString(" chars merged, needed area: ") +
                              QString::number(percent2) + QString("%."));
         if(packer.missingChars == 0) done = true;
-        emit renderedImage(texture);
+        QImage scaled = texture.scaled(texture.size()*8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
+        emit renderedImage(scaled.scaled(texture.size()));
     }
-    // int nMilliseconds = myTimer.elapsed();
-    // qDebug() << nMilliseconds;
+    int nMilliseconds = myTimer.elapsed();
+    qDebug() << nMilliseconds;
 }
 
 unsigned int FontRender::qchar2ui(QChar ch)
