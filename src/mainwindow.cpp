@@ -5,11 +5,23 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QColorDialog>
+#include <QFontDatabase>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    QFontDatabase fdb;
+    QDir currentDir;
+    QStringList filters;
+    filters << "*.ttf" << "*.TTF";
+    currentDir.setNameFilters(filters);
+    QStringList entryList = currentDir.entryList();
+    for(int i = 0; i < entryList.size(); ++i)
+    {
+        fdb.addApplicationFont(entryList.at(i));
+    }
     ui->setupUi(this);
     ui->fontColor->hide();
     ui->fontColorLabel->hide();
