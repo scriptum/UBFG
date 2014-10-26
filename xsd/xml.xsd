@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name ="fontList">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="font" maxOccurs="unbounded">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="char" maxOccurs="unbounded">
+		<xs:complexType>
+		  <xs:attribute name="id" type="xs:unsignedInt" />
+		  <xs:attribute name="x" type="xs:unsignedInt" />
+		  <xs:attribute name="y" type="xs:unsignedInt" />
+		  <xs:attribute name="width" type="xs:unsignedInt" />
+		  <xs:attribute name="height" type="xs:unsignedInt" />
+		  <xs:attribute name="Xoffset" type="xs:unsignedInt" />
+		  <xs:attribute name="Yoffset" type="xs:unsignedInt" />
+		  <xs:attribute name="OrigWidth" type="xs:unsignedInt" />
+		  <xs:attribute name="OrigHeight" type="xs:unsignedInt" />
+		</xs:complexType>
+	      </xs:element>
+	      <xs:element name="kerning" minOccurs="0" maxOccurs="unbounded">
+		<xs:complexType>		  
+		  <xs:attribute name="first" type="xs:unsignedInt" />
+		  <xs:attribute name="second" type="xs:unsignedInt" />
+		  <xs:attribute name="value" type="xs:int" />
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	    <xs:attribute name="name" type="xs:string" />
+	    <xs:attribute name="size" type="xs:string" />
+	    <xs:attribute name="bold" type="xs:boolean" />	    
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="texture" minOccurs="0" maxOccurs="unbounded">
+	  <xs:complexType>
+	    <xs:simpleContent>
+	      <xs:extension base="xs:base64Binary">
+		<xs:attribute name="width" type="xs:unsignedInt" />
+		<xs:attribute name="height" type="xs:unsignedInt" />
+		<xs:attribute name="format" type="xs:string" />
+	      </xs:extension>
+	    </xs:simpleContent>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

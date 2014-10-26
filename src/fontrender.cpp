@@ -244,21 +244,15 @@ void FontRender::run()
             QSize charSize = fontMetrics.size(0, charFirst);
             packed_image.charWidth = fontMetrics.width(charFirst) / distanceFieldScale;
             int firstBearing = fontMetrics.leftBearing(charFirst);
-//            firstBearing = firstBearing > 0 ? 0 : firstBearing;
             packed_image.bearing = firstBearing / distanceFieldScale;
-//            qDebug() << fontMetrics.leftBearing(charFirst) << charFirst;
             width = charSize.width() - firstBearing;
             if(exporting && ui->exportKerning->isChecked())
             {
                 for (int j = 0; j < charList.size(); ++j)
                 {
                     QChar charSecond = charList.at(j);
-//                    int secondBearing = fontMetrics.leftBearing(charSecond);
-//                    secondBearing = secondBearing > 0 ? 0 : secondBearing;
-//                    int widthAll = charSize.width() + fontMetrics.size(0, charSecond).width() - secondBearing;
                     int widthAll = fontMetrics.width(charFirst) + fontMetrics.width(charSecond);
                     QString kernPair(QString(charFirst) + QString(charSecond));
-//                    float kerning = (float)(fontMetrics.size(0, kernPair).width() - widthAll) / (float)distanceFieldScale;
                     float kerning = (float)(fontMetrics.width(kernPair) - widthAll) / (float)distanceFieldScale;
                     if(kerning != 0)
                     {
@@ -287,14 +281,12 @@ void FontRender::run()
             if(exporting)
                 painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
             else
-                painter.fillRect(0, 0, width, height,
-                                 ui->transparent->isEnabled() && ui->transparent->isChecked() ? Qt::black : bkgColor);
+                painter.fillRect(0, 0, width, height, bkgColor);
             painter.setPen(fontColor);
             painter.drawText(-firstBearing, base, charFirst);
             if(distanceField)
             {
                 dfcalculate(&buffer, distanceFieldScale, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
-                // buffer.save(charList.at(i), "PNG");
                 packed_image.img = buffer.scaled(buffer.size() / distanceFieldScale);
             }
             packed_image.crop = packed_image.img.rect();
@@ -324,12 +316,14 @@ void FontRender::run()
         for (i = 0; i < glyphLst.size(); ++i)
             if(glyphLst.at(i).merged == false)
                     p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
-
-        QImage scaled = texture.scaled(texture.size() * 8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
-        QImage texture1 = (scaled.scaled(texture.size()));
-        texture = texture1;
-        
+        // apply distance field calculations if selected
+        if(distanceField)
+        {
+            QImage scaled = texture.scaled(texture.size() * 8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
+            QImage texture1 = (scaled.scaled(texture.size()));
+            texture = texture1;
+        }
         if (ui->transparent->isEnabled() && ui->transparent->isChecked())
         {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
@@ -371,9 +365,15 @@ void FontRender::run()
                              QString::number(packer.mergedChars) + QString(" chars merged, needed area: ") +
                              QString::number(percent2) + QString("%."));
         if(packer.missingChars == 0) done = true;
-        QImage scaled = texture.scaled(texture.size()*8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
-        emit renderedImage(scaled.scaled(texture.size()));
+        // apply distance field calculations if selected
+        if(distanceField)
+        {
+            QImage scaled = texture.scaled(texture.size()*8, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            dfcalculate(&scaled, 8, exporting && ui->transparent->isEnabled() && ui->transparent->isChecked());
+            emit renderedImage(scaled.scaled(texture.size()));
+        } else {
+            emit renderedImage(texture);
+        }
     }
     int nMilliseconds = myTimer.elapsed();
     qDebug() << nMilliseconds;
