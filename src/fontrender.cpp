@@ -196,10 +196,15 @@ void FontRender::run()
         distanceField = true;
         baseTxtrFormat = QImage::Format_ARGB32;
     }
-    else
+    else if (Qt::Checked == ui->transparent->checkState())
     {
         distanceField = false;
         baseTxtrFormat = QImage::Format_ARGB32_Premultiplied;
+    }
+    else
+    {
+        distanceField = false;
+        baseTxtrFormat = QImage::Format_RGB888;
     }
     int distanceFieldScale = 4;
     if(exporting)

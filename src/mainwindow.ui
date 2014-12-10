@@ -36,7 +36,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1043,10 +1043,7 @@
           <item>
            <widget class="QComboBox" name="encoding">
             <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="currentText">
-             <string notr="true"/>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
