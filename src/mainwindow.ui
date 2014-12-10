@@ -36,7 +36,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -67,7 +67,7 @@
              </sizepolicy>
             </property>
             <property name="currentIndex">
-             <number>40</number>
+             <number>192</number>
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QComboBox::AdjustToContents</enum>
@@ -76,7 +76,9 @@
              <bool>true</bool>
             </property>
             <property name="currentFont">
-             <font/>
+             <font>
+              <family>DejaVu Sans</family>
+             </font>
             </property>
            </widget>
           </item>
@@ -239,6 +241,12 @@
           </item>
           <item>
            <widget class="QPushButton" name="backgroundColor">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
             <property name="palette">
              <palette>
               <active>
@@ -1035,10 +1043,7 @@
           <item>
            <widget class="QComboBox" name="encoding">
             <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="currentText" stdset="0">
-             <string notr="true"/>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -1322,8 +1327,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>563</width>
-           <height>667</height>
+           <width>565</width>
+           <height>675</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">

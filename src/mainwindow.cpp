@@ -23,13 +23,6 @@ MainWindow::MainWindow(QWidget *parent) :
         fdb.addApplicationFont(entryList.at(i));
     }
     ui->setupUi(this);
-    ui->fontColor->hide();
-    ui->fontColorLabel->hide();
-    ui->backgroundColor->hide();
-    delete ui->fontColorLayout;
-    ui->bitDepthLabel->hide();
-    ui->bitDepth->hide();
-    delete ui->bitDepthLayout;
     ui->bruteForce->hide();
     thread = new FontRender(ui);
     thread->exporting = false;
