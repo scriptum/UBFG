@@ -336,39 +336,14 @@ void FontRender::run()
         }
         if (ui->transparent->isEnabled() && ui->transparent->isChecked())
         {
-            if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::PreferDither);
+            if (0 == ui->bitDepth->currentIndex())
+                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither | Qt::PreferDither);
         }
         else
         {
-            if (0 == ui->bitDepth->currentIndex())
-            {
-                // 8 bit - because QT sometimes adds 'dither dots to the background despite the no-dither flag
-                QImage mask = texture.createMaskFromColor(bkgColor.rgb());
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::AvoidDither);
-                // find nearest color to background in palette
-                QVector<QRgb> palette = texture.colorTable();
-                unsigned paletteIndex = 0;
-                unsigned nearestColor = std::numeric_limits<unsigned>::max();
-                for (QVector<QRgb>::iterator itr = palette.begin(); itr != palette.end(); ++itr) {
-                    QColor color(*itr);
-                    int redDif = color.red() - bkgColor.red();
-                    int grnDif = color.green() - bkgColor.green();
-                    int bluDif = color.blue() - bkgColor.blue();
-                    unsigned dist = (redDif * redDif) + (grnDif * grnDif) + (bluDif * bluDif);
-                    if (dist < nearestColor) {
-                        paletteIndex = itr - palette.begin();
-                        nearestColor = dist;
-                    }
-                }
-                // force the background (defined by the mask) to be the background color
-                for (int y = 0; y < mask.height(); ++y) {
-                    for (int x = 0; x < mask.width(); ++x) {
-                        if (0xFFFFFFFF == mask.pixel(x, y)) texture.setPixel(x, y, paletteIndex);
-                    }
-                }
-            }
-            else // 24 bit image - avoid dither because it can make weird
+            if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
+                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither | Qt::ThresholdDither);
+            else // 24 bit image
                 texture = texture.convertToFormat(QImage::Format_RGB888, Qt::ThresholdAlphaDither | Qt::PreferDither);
         }
         bool result;
