@@ -11,6 +11,7 @@
 #include <QTime>
 #include <stdio.h>
 #include <math.h>
+#include <limits>
 
 FontRender::FontRender(Ui_MainWindow *_ui) : ui(_ui)
 {}
@@ -179,6 +180,7 @@ void FontRender::run()
     int i, k, base;
     uint width, height;
     QImage::Format baseTxtrFormat;
+    QImage::Format glyphTxtrFormat;
     QString charList = ui->plainTextEdit->toPlainText();
     packer.sortOrder = ui->sortOrder->currentIndex();
     packer.borderTop = ui->borderTop->value();
@@ -195,16 +197,19 @@ void FontRender::run()
     {
         distanceField = true;
         baseTxtrFormat = QImage::Format_ARGB32;
+        glyphTxtrFormat= QImage::Format_ARGB32;
     }
     else if (Qt::Checked == ui->transparent->checkState())
     {
         distanceField = false;
         baseTxtrFormat = QImage::Format_ARGB32_Premultiplied;
+        glyphTxtrFormat= QImage::Format_ARGB32_Premultiplied;
     }
     else
     {
         distanceField = false;
-        baseTxtrFormat = QImage::Format_RGB888;
+        baseTxtrFormat = QImage::Format_RGB32;
+        glyphTxtrFormat= QImage::Format_ARGB32_Premultiplied;
     }
     int distanceFieldScale = 4;
     if(exporting)
@@ -271,22 +276,20 @@ void FontRender::run()
             QImage buffer;
             if(distanceField)
             {
-                buffer = QImage(width, height, baseTxtrFormat);
+                buffer = QImage(width, height, glyphTxtrFormat);
                 buffer.fill(Qt::transparent);
             }
             else
             {
-                packed_image.img = QImage(width, height, baseTxtrFormat);
+                packed_image.img = QImage(width, height, glyphTxtrFormat);
                 packed_image.img.fill(Qt::transparent);
             }
 
             packed_image.ch = charFirst;
             QPainter painter(distanceField ? &buffer : &packed_image.img);
             painter.setFont(font);
-            if(exporting)
-                painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-            else
-                painter.fillRect(0, 0, width, height, bkgColor);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            //painter.setCompositionMode(QPainter::CompositionMode_Source);
             painter.setPen(fontColor);
             painter.drawText(-firstBearing, base, charFirst);
             if(distanceField)
@@ -307,7 +310,7 @@ void FontRender::run()
     points = packer.pack(&glyphLst, ui->comboHeuristic->currentIndex(), width, height);
     QImage texture(width, height, baseTxtrFormat);
     texture.fill(bkgColor.rgba());
-    QPainter p(&texture);
+    QPainter p;
     if(exporting)
     {
         // Some sort of unicode hack...
@@ -316,11 +319,13 @@ void FontRender::run()
         else
             pCodec = QTextCodec::codecForName(ui->encoding->currentText().toLatin1());
         // draw glyphs
-        if(!ui->transparent->isChecked() || ui->transparent->isEnabled())
+        p.begin(&texture);
+        if(!ui->transparent->isChecked() || !ui->transparent->isEnabled())
             p.fillRect(0,0,texture.width(),texture.height(), bkgColor);
         for (i = 0; i < glyphLst.size(); ++i)
             if(glyphLst.at(i).merged == false)
-                    p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
+                    p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);                   
+        p.end();
         // apply distance field calculations if selected
         if(distanceField)
         {
@@ -332,13 +337,38 @@ void FontRender::run()
         if (ui->transparent->isEnabled() && ui->transparent->isChecked())
         {
             if (0 == ui->bitDepth->currentIndex()) // 8 bit alpha image
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::DiffuseAlphaDither | Qt::PreferDither);
+                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::PreferDither);
         }
         else
         {
-            if (0 == ui->bitDepth->currentIndex()) // 8 bit
-                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::ThresholdAlphaDither |Qt::PreferDither);
-            else  // 24 bit image
+            if (0 == ui->bitDepth->currentIndex())
+            {
+                // 8 bit - because QT sometimes adds 'dither dots to the background despite the no-dither flag
+                QImage mask = texture.createMaskFromColor(bkgColor.rgb());
+                texture = texture.convertToFormat(QImage::Format_Indexed8, Qt::AvoidDither);
+                // find nearest color to background in palette
+                QVector<QRgb> palette = texture.colorTable();
+                unsigned paletteIndex = 0;
+                unsigned nearestColor = std::numeric_limits<unsigned>::max();
+                for (QVector<QRgb>::iterator itr = palette.begin(); itr != palette.end(); ++itr) {
+                    QColor color(*itr);
+                    int redDif = color.red() - bkgColor.red();
+                    int grnDif = color.green() - bkgColor.green();
+                    int bluDif = color.blue() - bkgColor.blue();
+                    unsigned dist = (redDif * redDif) + (grnDif * grnDif) + (bluDif * bluDif);
+                    if (dist < nearestColor) {
+                        paletteIndex = itr - palette.begin();
+                        nearestColor = dist;
+                    }
+                }
+                // force the background (defined by the mask) to be the background color
+                for (int y = 0; y < mask.height(); ++y) {
+                    for (int x = 0; x < mask.width(); ++x) {
+                        if (0xFFFFFFFF == mask.pixel(x, y)) texture.setPixel(x, y, paletteIndex);
+                    }
+                }
+            }
+            else // 24 bit image - avoid dither because it can make weird
                 texture = texture.convertToFormat(QImage::Format_RGB888, Qt::ThresholdAlphaDither | Qt::PreferDither);
         }
         bool result;
@@ -359,9 +389,12 @@ void FontRender::run()
     }
     else
     {
+        // draw glyhps
+        p.begin(&texture);
         for (i = 0; i < glyphLst.size(); i++)
             p.drawImage(QPoint(glyphLst.at(i).rc.x(), glyphLst.at(i).rc.y()), glyphLst.at(i).img);
 
+        p.end();  // end of drawing glyphs
         int percent = (int)(((float)packer.area / (float)width / (float)height) * 100.0f + 0.5f);
         float percent2 = (float)(((float)packer.neededArea / (float)width / (float)height) * 100.0f );
         ui->preview->setText(QString("Preview: ") +
