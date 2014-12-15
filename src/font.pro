@@ -19,13 +19,15 @@ SOURCES += main.cpp \
     imagecrop.cpp \
     guillotine.cpp \
     imagesort.cpp \
+    sdf.cpp \
     maxrects.cpp
 HEADERS += mainwindow.h \
     fontrender.h \
     fontview.h \
     imagepacker.h \
     guillotine.h \
+    sdf.h \
     maxrects.h
 FORMS += mainwindow.ui
-QMAKE_CXXFLAGS_RELEASE -= -O2
-QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math -fomit-frame-pointer
+QMAKE_CXXFLAGS -= -fopenmp
+QMAKE_LDFLAGS += -fopenmp
