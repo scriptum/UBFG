@@ -39,8 +39,9 @@ double getPSNR(QImage &image1, QImage &image2)
 }
 int main()
 {
+    QTime myTimer;
     QImage bigimg("test-big.png");
-    QTime myTimer.start();
+    myTimer.start();
     dfcalculate(bigimg);
     qDebug() << "Performance test:" << myTimer.elapsed() << "ms";
     bool ok = true;

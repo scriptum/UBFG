@@ -72,15 +72,11 @@ static inline void Compare(Grid &g, int x, int y, int offsetx, int offsety)
 static void Generate8SED(Grid &g)
 {
     /* forward scan */
-     //#pragma omp parallel for
     for(int y = 1; y <= g.h; y++)
     {
         for(int x = 1; x <= g.w; x++)
         {
             Compare(g, x, y,  0, -1);
-        //}
-        //for(int x = 1; x <= g.w; x++)
-        //{
             Compare(g, x, y, -1,  0);
             Compare(g, x, y, -1, -1);
         }
@@ -92,15 +88,11 @@ static void Generate8SED(Grid &g)
     }
 
     /* backward scan */
-     //#pragma omp parallel for
     for(int y = g.h - 1; y > 0; y--)
     {
         for(int x = 1; x <= g.w; x++)
         {
             Compare(g, x, y,  0,  1);
-        //}
-        //for(int x = 1; x <= g.w; x++)
-        //{
             Compare(g, x, y, -1,  0);
             Compare(g, x, y, -1,  1);
         }
@@ -114,7 +106,6 @@ static void Generate8SED(Grid &g)
 static void Generate4SED(Grid &g)
 {
     /* forward scan */
-     //#pragma omp parallel for
     for(int y = 1; y <= g.h; y++)
     {
         for(int x = 1; x <= g.w; x++)
@@ -129,7 +120,6 @@ static void Generate4SED(Grid &g)
     }
 
     /* backward scan */
-     //#pragma omp parallel for
     for(int y = g.h - 1; y > 0; y--)
     {
         for(int x = 1; x <= g.w; x++)
@@ -189,7 +179,7 @@ QImage dfcalculate(QImage &img)
         {
             float dist2 = sqrtf((float)Get(grid, x, y).f);
             quint8 c = dist2 * MULTIPLER;
-            data[(y-1)*w + (x-1)] = c;
+            data[(y - 1) * w + (x - 1)] = c;
         }
     }
     return result;
@@ -200,7 +190,6 @@ QImage dfcalculate(QImage &img)
 
 QImage dfcalculate_bruteforce(QImage &img)
 {
-    //short x, y;
     int w = img.width(), h = img.height();
     QImage result(w, h, QImage::Format_Indexed8);
     for(int i = 0; i < 256; i++)
