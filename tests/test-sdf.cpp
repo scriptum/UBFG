@@ -39,22 +39,25 @@ double getPSNR(QImage &image1, QImage &image2)
 }
 int main()
 {
-    QTime myTimer;
     QImage bigimg("test-big.png");
-    myTimer.start();
+    QTime myTimer.start();
     dfcalculate(bigimg);
-    qDebug() << "8SED (BIG):\t" << myTimer.elapsed() << "ms";
-    QImage img("test.png");
-    myTimer.start();
-    QImage res_8sed = dfcalculate(img);
-    qDebug() << "8SED:\t\t" << myTimer.elapsed() << "ms";
-    //res_8sed.save("result-8sed.png");
-    myTimer.start();
-    QImage res_brut = dfcalculate_bruteforce(img);
-    qDebug() << "Brute-force:\t" << myTimer.elapsed() << "ms";
-    //res_brut.save("result-bruteforce.png");
-    double psnr = getPSNR(res_8sed, res_brut);
-    qDebug() << "PSNR:\t\t"<< psnr;
-    if(psnr < 70.)
+    qDebug() << "Performance test:" << myTimer.elapsed() << "ms";
+    bool ok = true;
+    const int tests = 2;
+    qDebug() << "PSNR test...";
+    for(int i = 1; i <= tests; i++)
+    {
+        QImage img(QString("test-%1.png").arg(i));
+        QImage ref(QString("test-%1-ref.png").arg(i));
+        QImage sdf = dfcalculate(img);
+        sdf.save(QString("test-%1-sdf.png").arg(i));
+        double psnr = getPSNR(sdf, ref);
+        qDebug() << "Test" << i << '-' << psnr;
+        ok &= psnr > 70.;
+    }
+    if(ok)
+        qDebug() << "OK";
+    else
         qDebug() << "FAIL!";
 }
