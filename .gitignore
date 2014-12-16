@@ -7,3 +7,7 @@ UBFG
 Makefile
 moc_*
 ui_*.h
+sdf-gen/sdf-gen
+tests/test-sdf
+*~
+tests/*-sdf.png

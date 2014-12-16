@@ -1,8 +1,8 @@
-TARGET = tests
+TARGET = test-sdf
 
 SOURCES += test-sdf.cpp \
-    sdf.cpp
-HEADERS += sdf.h
+    ../src/sdf.cpp
+HEADERS += ../src/sdf.h
 
 
 QMAKE_CXXFLAGS += -fopenmp -std=c++0x

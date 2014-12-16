@@ -1,19 +1,26 @@
 /* http://www.codersnotes.com/algorithms/signed-distance-fields */
 
-#include <QImage>
-#include <QTime>
-#include <QDebug>
-#include <math.h>
+#include <QtCore>
+#include "sdf.h"
 
-#define DIST_CACHE
 #define MULTIPLER 8
+
+SDF::SDF(const QString & fileName, const char * format) : 
+    QImage(fileName, format), 
+    method(METHOD_4SED), 
+    test(false), 
+    sdf(size(), QImage::Format_Indexed8)
+{
+    for(int i = 0; i < 256; i++)
+    {
+        sdf.setColor(i, qRgb(i, i, i));
+    }
+}
 
 struct Point
 {
     short dx, dy;
-#ifdef DIST_CACHE
     int f;
-#endif
 };
 
 struct Grid
@@ -29,13 +36,9 @@ struct Grid
         delete[] grid;
     }
 };
-#ifdef DIST_CACHE
+
 static const Point pointInside = { 0, 0, 0 };
 static const Point pointEmpty = { SHRT_MAX, SHRT_MAX, INT_MAX/2 };
-#else
-static const Point pointInside = { 0, 0 };
-static const Point pointEmpty = { SHRT_MAX, SHRT_MAX };
-#endif
 
 static inline Point Get(Grid &g, int x, int y)
 {
@@ -47,25 +50,9 @@ static inline void Put(Grid &g, int x, int y, const Point &p)
     g.grid[y * (g.w + 2) + x] = p;
 }
 
-#ifndef DIST_CACHE
-static inline void Compare(Grid &g, int x, int y, int offsetx, int offsety)
-{
-    Point p = Get(g, x, y);
-    Point other = Get(g, x + offsetx, y + offsety);
-    other.dx += offsetx;
-    other.dy += offsety;
-    int newdist = other.dx*other.dx+other.dy*other.dy;
-    if (newdist <= p.dx*p.dx+p.dy*p.dy)
-    {
-        p = other;
-    }
-    Put(g, x, y, p);
-}
-#else
 static inline void Compare(Grid &g, int x, int y, int offsetx, int offsety)
 {
     int add;
-    Point p = Get(g, x, y);
     Point other = Get(g, x + offsetx, y + offsety);
     if(offsety == 0) {
         add = 2 * other.dx + 1;
@@ -77,38 +64,30 @@ static inline void Compare(Grid &g, int x, int y, int offsetx, int offsety)
         add = 2 * (other.dy + other.dx + 1);
     }
     other.f += add;
-    if (other.f < p.f)
+    if (other.f < Get(g, x, y).f)
     {
-        p.f = other.f;
         if(offsety == 0) {
-            p.dx = other.dx + 1;
-            p.dy = other.dy;
+            other.dx++;
         }
         else if(offsetx == 0) {
-            p.dy = other.dy + 1;
-            p.dx = other.dx;
+            other.dy++;
         }
         else {
-            p.dy = other.dy + 1;
-            p.dx = other.dx + 1;
+            other.dy++;
+            other.dx++;
         }
+        Put(g, x, y, other);
     }
-    Put(g, x, y, p);
 }
-#endif
-static void GenerateSDF(Grid &g)
+
+static void Generate8SED(Grid &g)
 {
     /* forward scan */
-    // #pragma omp parallel for
     for(int y = 1; y <= g.h; y++)
     {
-        for(int x = 0; x <= g.w; x++)
-        {
-            Compare(g, x, y,  0, -1);
-            Compare(g, x, y,  0, -1);
-        }
         for(int x = 1; x <= g.w; x++)
         {
+            Compare(g, x, y,  0, -1);
             Compare(g, x, y, -1,  0);
             Compare(g, x, y, -1, -1);
         }
@@ -116,144 +95,118 @@ static void GenerateSDF(Grid &g)
         {
             Compare(g, x, y,  1,  0);
             Compare(g, x, y,  1, -1);
-            x--;
-            Compare(g, x, y,  1,  0);
-            Compare(g, x, y,  1, -1);
         }
     }
 
     /* backward scan */
-    // #pragma omp parallel for
-    for(int y = g.h-1; y > 0; y--)
+    for(int y = g.h - 1; y > 0; y--)
     {
-        for(int x = 0; x <= g.w; x++)
-        {
-            Compare(g, x, y,  0,  1);
-        }
         for(int x = 1; x <= g.w; x++)
         {
+            Compare(g, x, y,  0,  1);
             Compare(g, x, y, -1,  0);
             Compare(g, x, y, -1,  1);
         }
-        for(int x = g.w-1; x >= 0; x--)
+        for(int x = g.w - 1; x > 0; x--)
         {
             Compare(g, x, y,  1,  0);
             Compare(g, x, y,  1,  1);
         }
     }
 }
-
-
-
-QImage dfcalculate(QImage &img, bool transparent = false)
+static void Generate4SED(Grid &g)
 {
-    int w = img.width(), h = img.height();
-    QImage result(w, h, QImage::Format_Indexed8);
-    for(int i = 0; i < 256; i++)
+    /* forward scan */
+    for(int y = 1; y <= g.h; y++)
     {
-        result.setColor(i, qRgb(i,i,i));
+        for(int x = 1; x <= g.w; x++)
+        {
+            Compare(g, x, y,  0, -1);
+            Compare(g, x, y, -1,  0);
+        }
+        for(int x = g.w - 1; x > 0; x--)
+        {
+            Compare(g, x, y,  1,  0);
+        }
     }
-    Grid grid1(w, h);
-    Grid grid2(w, h);
+
+    /* backward scan */
+    for(int y = g.h - 1; y > 0; y--)
+    {
+        for(int x = 1; x <= g.w; x++)
+        {
+            Compare(g, x, y,  0,  1);
+            Compare(g, x, y, -1,  0);
+        }
+        for(int x = g.w - 1; x > 0; x--)
+        {
+            Compare(g, x, y,  1,  0);
+        }
+    }
+}
+
+void SDF::calculate_sed(int method)
+{
+    int w = width(), h = height();
+    Grid grid(w, h);
     /* create 1-pixel gap */
-    QTime myTimer;
-    myTimer.start();
     for(int x = 0; x < w + 2; x++)
     {
-        //Put(grid1, x, 0, pointInside);
-        Put(grid2, x, 0, pointEmpty);
-        //Put(grid1, x, h + 1, pointInside);
-        Put(grid2, x, h + 1, pointEmpty);
+        Put(grid, x, 0, pointEmpty);
+        Put(grid, x, h + 1, pointEmpty);
     }
-    uchar *data = img.bits();
-    uchar pixel = img.bytesPerLine() / w;
+    uchar *data = bits();
+    uchar pixel = bytesPerLine() / w;
     #pragma omp parallel for
     for(int y = 1; y <= h; y++)
     {
-        Put(grid1, 0, y, pointInside);
-        //Put(grid2, 0, y, pointEmpty);
-        // #pragma omp parallel for
+        Put(grid, 0, y, pointEmpty);
         for(int x = 1; x <= w; x++)
         {
-            //if(qGreen(img.pixel(x - 1, y - 1)) > 128)
-            if(data[((y - 1) * w + (x - 1)) * pixel ] > 128)
+            if(data[((y - 1) * w + (x - 1)) * pixel] > 128)
             {
-                //Put(grid1, x, y, pointEmpty);
-                Put(grid2, x, y, pointInside);
+                Put(grid, x, y, pointInside);
             }
             else
             {
-                //Put(grid1, x, y, pointInside);
-                Put(grid2, x, y, pointEmpty);
+                Put(grid, x, y, pointEmpty);
             }
         }
-        //Put(grid1, w + 1, y, pointInside);
-        Put(grid2, w + 1, y, pointEmpty);
+        Put(grid, w + 1, y, pointEmpty);
     }
-    qDebug() << "Prepare:\t" << myTimer.elapsed() << "ms";
-    /* calculation */
-    //#pragma omp parallel sections
-    {
-        //#pragma omp section
-        //{
-            //GenerateSDF(grid1);
-        //}
-        //#pragma omp section
-        //{
-            GenerateSDF(grid2);
-        //}
-    }
-    myTimer.start();
-    data  = result.bits();
+    if(method == METHOD_4SED)
+        Generate4SED(grid);
+    else
+        Generate8SED(grid);
+    data  = sdf.bits();
     #pragma omp parallel for
     for(int y = 1; y <= h; y++)
     {
-        quint8 linecache[w];
         for(int x = 1; x <= w; x++)
         {
-            #ifdef DIST_CACHE
-            //double dist1 = sqrt((double)Get(grid1, x, y).f);
-            double dist2 = sqrt((double)Get(grid2, x, y).f);
-            #else
-            //double dist1 = sqrt((double)(Get(grid1, x, y).dx*Get(grid1, x, y).dx+Get(grid1, x, y).dy*Get(grid1, x, y).dy));
-            double dist2 = sqrt((double)(Get(grid2, x, y).dx*Get(grid2, x, y).dx+Get(grid2, x, y).dy*Get(grid2, x, y).dy));
-            #endif
-            //double dist = dist1 - dist2;
-            // Clamp and scale
+            qreal dist2 = qSqrt((qreal)Get(grid, x, y).f);
             quint8 c = dist2 * MULTIPLER;
-            data[(y-1)*w + (x-1)] = c;
+            data[(y - 1) * w + (x - 1)] = c;
         }
     }
-    qDebug() << "Write:\t\t" << myTimer.elapsed() << "ms";
-    return result;
 }
 
-#include <QPair>
-#include <QVector>
-
-QImage dfcalculate_bruteforce(QImage &img, bool transparent = false)
+void SDF::calculate_bruteforce()
 {
-    //short x, y;
-    int w = img.width(), h = img.height();
-    QImage result(w, h, QImage::Format_Indexed8);
-    for(int i = 0; i < 256; i++)
-    {
-        result.setColor(i, qRgb(i,i,i));
-    }
+    int w = width(), h = height();
     QVector< QPair<short, short> > cache;
     for(short y = 0; y < h; y++)
     {
         for(short x = 0; x < w; x++)
         {
-            if(qGreen(img.pixel(x, y)) > 128)
+            if(qGreen(pixel(x, y)) > 128)
                 cache.append({x,y});
         }
     }
-    uchar *data  = result.bits();
+    uchar *data  = sdf.bits();
     #pragma omp parallel for
     for(short y = 0; y < h; y++)
     {
-        //quint8 linecache[w];
         for(short x = 0; x < w; x++)
         {
             int min = INT_MAX;
@@ -267,9 +220,24 @@ QImage dfcalculate_bruteforce(QImage &img, bool transparent = false)
                     min = d;
                 }
             }
-            quint8 c = sqrt(min) * MULTIPLER;
+            quint8 c = sqrtf(min) * MULTIPLER;
             data[y * w + x] = c;
         }
     }
-    return result;
+}
+QImage *SDF::calculate()
+{
+    switch(method)
+    {
+        case METHOD_BRUTEFORCE:
+            calculate_bruteforce();
+            break;
+        case METHOD_4SED:
+            calculate_sed(method);
+            break;
+        case METHOD_8SED:
+            calculate_sed(method);
+            break;
+    }
+    return &sdf;
 }
