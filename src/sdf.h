@@ -4,7 +4,7 @@ class SDF : public QImage
 {
 private:
     int method;
-    bool test;
+    int scale;
     QImage sdf;
     void calculate_bruteforce();
     void calculate_sed(int method);
@@ -15,9 +15,9 @@ public:
     {
         method = m;
     }
-    void setTest(bool t)
+    void setScale(int s)
     {
-        test = t;
+        scale = s;
     }
     QImage *calculate();
 };

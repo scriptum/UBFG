@@ -22,16 +22,11 @@ int SDFGenerator::exec()
 {
     QStringList args = arguments();
     bool files = false;
-    bool test = false;
+    int scale = 1;
     int method = SDF::METHOD_4SED;
     for(int i = 1; i < args.size(); i++)
     {
-        QString arg = args.at(i);
-        if(arg == "-t" || arg == "--test" )
-        {
-            test = true;
-        }
-        else if(arg == "-b" || arg == "--brute-force" )
+        QString arg = args.at(i);if(arg == "-b" || arg == "--brute-force" )
         {
             method = SDF::METHOD_BRUTEFORCE;
         }
@@ -57,7 +52,7 @@ int SDFGenerator::exec()
                 else
                 {
                     QString name(fi.path() + QDir::separator() + fi.baseName() + "-sdf.png");
-                    img.setTest(test);
+                    img.setScale(scale);
                     img.setMethod(method);
                     img.calculate()->save(name);
                 }

@@ -3,12 +3,10 @@
 #include <QtCore>
 #include "sdf.h"
 
-#define MULTIPLER 8
-
 SDF::SDF(const QString & fileName, const char * format) : 
     QImage(fileName, format), 
     method(METHOD_4SED), 
-    test(false), 
+    scale(1), 
     sdf(size(), QImage::Format_Indexed8)
 {
     for(int i = 0; i < 256; i++)
@@ -80,6 +78,10 @@ static inline void Compare(Grid &g, int x, int y, int offsetx, int offsety)
     }
 }
 
+#define COMPARE(offsetx, offsety) Compare(g, x, y, offsetx, offsety)
+
+#define CLAMP(x, a, b) ((x) < (a) ? (a) : ((x) > (b) ? (b) : (x)))
+
 static void Generate8SED(Grid &g)
 {
     /* forward scan */
@@ -87,14 +89,14 @@ static void Generate8SED(Grid &g)
     {
         for(int x = 1; x <= g.w; x++)
         {
-            Compare(g, x, y,  0, -1);
-            Compare(g, x, y, -1,  0);
-            Compare(g, x, y, -1, -1);
+            COMPARE( 0, -1);
+            COMPARE(-1,  0);
+            COMPARE(-1, -1);
         }
         for(int x = g.w; x >= 0; x--)
         {
-            Compare(g, x, y,  1,  0);
-            Compare(g, x, y,  1, -1);
+            COMPARE( 1,  0);
+            COMPARE( 1, -1);
         }
     }
 
@@ -103,14 +105,14 @@ static void Generate8SED(Grid &g)
     {
         for(int x = 1; x <= g.w; x++)
         {
-            Compare(g, x, y,  0,  1);
-            Compare(g, x, y, -1,  0);
-            Compare(g, x, y, -1,  1);
+            COMPARE( 0,  1);
+            COMPARE(-1,  0);
+            COMPARE(-1,  1);
         }
         for(int x = g.w - 1; x > 0; x--)
         {
-            Compare(g, x, y,  1,  0);
-            Compare(g, x, y,  1,  1);
+            COMPARE( 1,  0);
+            COMPARE( 1,  1);
         }
     }
 }
@@ -121,12 +123,12 @@ static void Generate4SED(Grid &g)
     {
         for(int x = 1; x <= g.w; x++)
         {
-            Compare(g, x, y,  0, -1);
-            Compare(g, x, y, -1,  0);
+            COMPARE( 0, -1);
+            COMPARE(-1,  0);
         }
         for(int x = g.w - 1; x > 0; x--)
         {
-            Compare(g, x, y,  1,  0);
+            COMPARE( 1,  0);
         }
     }
 
@@ -135,12 +137,12 @@ static void Generate4SED(Grid &g)
     {
         for(int x = 1; x <= g.w; x++)
         {
-            Compare(g, x, y,  0,  1);
-            Compare(g, x, y, -1,  0);
+            COMPARE( 0,  1);
+            COMPARE(-1,  0);
         }
         for(int x = g.w - 1; x > 0; x--)
         {
-            Compare(g, x, y,  1,  0);
+            COMPARE( 1,  0);
         }
     }
 }
@@ -185,8 +187,8 @@ void SDF::calculate_sed(int method)
         for(int x = 1; x <= w; x++)
         {
             qreal dist2 = qSqrt((qreal)Get(grid, x, y).f);
-            quint8 c = dist2 * MULTIPLER;
-            data[(y - 1) * w + (x - 1)] = c;
+            int c = dist2 * scale;
+            data[(y - 1) * w + (x - 1)] = CLAMP(c, 0, 255);
         }
     }
 }
@@ -220,8 +222,8 @@ void SDF::calculate_bruteforce()
                     min = d;
                 }
             }
-            quint8 c = sqrtf(min) * MULTIPLER;
-            data[y * w + x] = c;
+            int c = sqrtf(min) * scale;
+            data[y * w + x] = CLAMP(c, 0, 255);
         }
     }
 }
