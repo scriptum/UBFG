@@ -9,24 +9,28 @@ SDFGenerator::SDFGenerator(int & argc, char ** argv):QCoreApplication(argc, argv
 void SDFGenerator::help()
 {
     QFileInfo fi(arguments().at(0));
-    qDebug(_("Usage: %s [options] FILE..."), fi.baseName().toStdString().c_str());
-    qDebug() << _("This tool converts grayscale images into SDF (Digned Distance Field)") << '\n';
-    qDebug() << _("Options:");
-    qDebug() << _("  -t, --test         Generate image for tests");
-    qDebug() << _("  -b, --brute-force  Use exact brute-force algorithm (SLOW)");
-    qDebug() << _("  -4, --4sed         Use very fast 4SED algorithm (this is default)");
-    qDebug() << _("  -8, --8sed         Use fast 8SED algorithm (better quality with reasonable performance)");
+    QTextStream out(stderr);
+    out << tr("Usage: %1 [options] FILE...").arg(fi.baseName()) << endl;
+    out << tr("This tool converts grayscale images into SDF (Signed Distance Field)") << endl << endl;
+    out << tr("Options:") << endl;
+    out << tr("  -b, --brute-force  Use exact brute-force algorithm (SLOW)") << endl;
+    out << tr("  -4, --4sed         Use very fast 4SED algorithm (this is default)") << endl;
+    out << tr("  -8, --8sed         Use fast 8SED algorithm (better quality with reasonable performance)") << endl;
 }
 
 int SDFGenerator::exec()
 {
     QStringList args = arguments();
     bool files = false;
-    int scale = 1;
+    int scale = 8;
     int method = SDF::METHOD_4SED;
+    QTranslator translator;
+    translator.load(":/" + QLocale::system().name());
+    installTranslator(&translator);
     for(int i = 1; i < args.size(); i++)
     {
-        QString arg = args.at(i);if(arg == "-b" || arg == "--brute-force" )
+        QString arg = args.at(i);
+        if(arg == "-b" || arg == "--brute-force" )
         {
             method = SDF::METHOD_BRUTEFORCE;
         }
@@ -43,14 +47,14 @@ int SDFGenerator::exec()
             QFileInfo fi(arg);
             if(fi.isFile())
             {
-                files = true;
                 SDF img(arg);
                 if(img.isNull())
                 {
-                    qWarning() << _("Cannot open file") << arg;
+                    QTextStream(stderr) << tr("Cannot open file") << ' ' << '"'  << arg << '"'  << endl;
                 }
                 else
                 {
+                    files = true;
                     QString name(fi.path() + QDir::separator() + fi.baseName() + "-sdf.png");
                     img.setScale(scale);
                     img.setMethod(method);
@@ -59,7 +63,7 @@ int SDFGenerator::exec()
             }
             else
             {
-                qWarning() << _("Cannot open file") << arg;
+                QTextStream(stderr) << tr("Cannot open file") << ' ' << '"' << arg << '"'  << endl;
             }
         }
     }

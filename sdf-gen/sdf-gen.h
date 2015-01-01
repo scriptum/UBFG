@@ -1,7 +1,5 @@
 #include <QCoreApplication>
 
-#define _(s) (tr(s).toStdString().c_str())
-
 class SDFGenerator : public QCoreApplication
 {
 Q_OBJECT

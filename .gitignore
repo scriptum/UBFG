@@ -3,6 +3,8 @@
 *.exe
 *.dll
 *.pro.user
+*.qm
+*.png
 UBFG
 Makefile
 moc_*
@@ -11,3 +13,4 @@ sdf-gen/sdf-gen
 tests/test-sdf
 *~
 tests/*-sdf.png
+qrc_*
